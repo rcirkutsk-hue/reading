@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Золотой петушок — полноэкранный слайдер</title>
+    <style>
+        /* ---------- Глобальный сброс ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* убираем прокрутку */
+            background: #f0efe7;
+            font-family: 'Arial', 'Segoe UI', sans-serif;
+        }
+
+        /* Контейнер занимает весь экран */
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            background: #fffaf5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #f7f2ec;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #fcf8f2;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        /* Картинка занимает 85% высоты, текст – 15% */
+        .slide-image {
+            width: 100%;
+            height: 85%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f7f2ec;
+        }
+
+        .slide-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .slide-text {
+            height: 15%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 248, 240, 0.95);
+            border-top: 2px solid #e6d9cc;
+            padding: 0 20px;
+            text-align: center;
+            font-size: clamp(24px, 4.5vw, 48px);
+            font-weight: bold;
+            color: #1f1a15;
+            line-height: 1.4;
+        }
+
+        .slide-text .author {
+            font-size: 0.6em;
+            font-weight: normal;
+            display: block;
+            margin-top: 0.2em;
+        }
+
+        /* ---------- Стрелки навигации ---------- */
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 40px;
+            color: #3d3229;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, opacity 0.2s;
+            opacity: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        .slider-wrapper:hover .slider-arrow {
+            opacity: 1;
+        }
+
+        .slider-arrow:hover {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .slider-arrow.prev {
+            left: 20px;
+        }
+
+        .slider-arrow.next {
+            right: 20px;
+        }
+
+        /* На сенсорных экранах стрелки видны всегда */
+        @media (pointer: coarse) {
+            .slider-arrow {
+                opacity: 0.8;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .slider-arrow {
+                width: 44px;
+                height: 44px;
+                font-size: 28px;
+                opacity: 0.8;
+            }
+            .slider-arrow.prev {
+                left: 10px;
+            }
+            .slider-arrow.next {
+                right: 10px;
+            }
+            .slide-text {
+                font-size: clamp(18px, 5vw, 32px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-container">
+    <div class="slider-wrapper" id="sliderWrapper">
+        <!-- Стрелки -->
+        <button class="slider-arrow prev" id="prevBtn" aria-label="Предыдущий">‹</button>
+        <button class="slider-arrow next" id="nextBtn" aria-label="Следующий">›</button>
+        <!-- Сюда будут вставляться слайды -->
+    </div>
+</div>
+
+<script>
+    // ===================================================
+    //  ДАННЫЕ СЛАЙДОВ (14 слайдов: титул + 13 сюжетных)
+    // ===================================================
+    const slidesData = [
+        {
+            text: 'Золотой петушок  <br><span class="author">  А.С. Пушкин</span>',
+            imgSrc: 'images/title.jpg'
+        },
+        {
+            text: 'Жил-был царь Дадон.',
+            imgSrc: 'images/1.jpg'
+        },
+        {
+            text: 'На его царство постоянно нападали соседи.',
+            imgSrc: 'images/2.jpg'
+        },
+        {
+            text: 'Мудрец подарил царю золотого петушка.',
+            imgSrc: 'images/3.jpg'
+        },
+        {
+            text: 'Царь пообещал мудрецу за петушка всё, что тот захочет.',
+            imgSrc: 'images/4.jpg'
+        },
+        {
+            text: 'Петушок сидел на высокой спице и охранял город.',
+            imgSrc: 'images/5.jpg'
+        },
+        {
+            text: 'Если враг приближался, петушок кричал и поворачивался.',
+            imgSrc: 'images/6.jpg'
+        },
+        {
+            text: 'Царь послал своих сыновей на войну.',
+            imgSrc: 'images/7.jpg'
+        },
+        {
+            text: 'Его сыновья погибли.',
+            imgSrc: 'images/7_1.jpg'
+        },
+        {
+            text: 'Тогда царь сам поехал на войну и нашёл там Шамаханскую царицу.',
+            imgSrc: 'images/8.jpg'
+        },
+        {
+            text: 'Царица понравилась царю, и он привёз её в свой дворец.',
+            imgSrc: 'images/9.jpg'
+        },
+        {
+            text: 'Мудрец попросил у царя эту царицу в награду.',
+            imgSrc: 'images/10.jpg'
+        },
+        {
+            text: 'Царь рассердился и ударил мудреца.',
+            imgSrc: 'images/11.jpg'
+        },
+        {
+            text: 'Тут петушок клюнул царя в голову, и царь умер.',
+            imgSrc: 'images/12.jpg'
+        }
+    ];
+
+    // ===================================================
+    //  ИНИЦИАЛИЗАЦИЯ
+    // ===================================================
+    const wrapper = document.getElementById('sliderWrapper');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let currentIndex = 0;
+    const totalSlides = slidesData.length;
+
+    function buildSlides() {
+        slidesData.forEach((data, idx) => {
+            const slideDiv = document.createElement('div');
+            slideDiv.className = 'slide';
+            if (idx === 0) slideDiv.classList.add('active');
+            slideDiv.dataset.index = idx;
+
+            const imageDiv = document.createElement('div');
+            imageDiv.className = 'slide-image';
+            const img = document.createElement('img');
+            img.src = data.imgSrc;
+            img.alt = data.text.replace(/<[^>]*>/g, '');
+            img.onerror = function() {
+                this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width%3D"800" height%3D"500" viewBox%3D"0 0 800 500"%3E%3Crect fill%3D"%23f0e8de" width%3D"800" height%3D"500"%2F%3E%3Ctext x%3D"400" y%3D"250" font-family%3D"Arial" font-size%3D"36" fill%3D"%23998877" text-anchor%3D"middle"%3EИзображение не найдено%3C%2Ftext%3E%3Ctext x%3D"400" y%3D"300" font-family%3D"Arial" font-size%3D"24" fill%3D"%23998877" text-anchor%3D"middle"%3Eпроверьте папку images%3C%2Ftext%3E%3C%2Fsvg%3E';
+            };
+            imageDiv.appendChild(img);
+            slideDiv.appendChild(imageDiv);
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'slide-text';
+            textDiv.innerHTML = data.text;
+            slideDiv.appendChild(textDiv);
+
+            wrapper.appendChild(slideDiv);
+        });
+    }
+    buildSlides();
+
+    function updateSlide(index) {
+        const slides = document.querySelectorAll('.slide');
+        slides.forEach((el, i) => {
+            el.classList.toggle('active', i === index);
+        });
+        currentIndex = index;
+    }
+
+    function goToPrev() {
+        if (currentIndex > 0) updateSlide(currentIndex - 1);
+    }
+
+    function goToNext() {
+        if (currentIndex < totalSlides - 1) updateSlide(currentIndex + 1);
+    }
+
+    prevBtn.addEventListener('click', goToPrev);
+    nextBtn.addEventListener('click', goToNext);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            goToPrev();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            goToNext();
+        }
+    });
+
+    updateSlide(0);
+</script>
+
+</body>
+</html>
