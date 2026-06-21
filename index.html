@@ -10,7 +10,6 @@
       margin: 0;
       padding: 0;
     }
-
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f0f4f8;
@@ -18,7 +17,6 @@
       display: flex;
       justify-content: center;
     }
-
     .container {
       max-width: 700px;
       width: 100%;
@@ -27,7 +25,6 @@
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
       padding: 30px 30px 40px;
     }
-
     h1 {
       font-size: 28px;
       color: #1e293b;
@@ -38,20 +35,16 @@
       align-items: center;
       gap: 10px;
     }
-
     h1 small {
       font-size: 16px;
       font-weight: normal;
       color: #64748b;
       margin-left: auto;
     }
-
-    /* Список */
     .link-list {
       list-style: none;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
-
     .link-item {
       background: #f8fafc;
       border-radius: 10px;
@@ -64,17 +57,14 @@
       border: 1px solid #e2e8f0;
       flex-wrap: wrap;
     }
-
     .link-item:hover {
       background: #f1f5f9;
       border-color: #cbd5e1;
     }
-
     .link-item .link-info {
       flex: 1;
       min-width: 150px;
     }
-
     .link-item .link-info a {
       font-size: 18px;
       font-weight: 500;
@@ -83,12 +73,10 @@
       word-break: break-all;
       transition: color 0.2s;
     }
-
     .link-item .link-info a:hover {
       color: #3b82f6;
       text-decoration: underline;
     }
-
     .link-item .link-info .url-meta {
       display: block;
       font-size: 13px;
@@ -96,449 +84,86 @@
       margin-top: 2px;
       word-break: break-all;
     }
-
-    .link-item .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      background: transparent;
-      border: 1px solid #cbd5e1;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.15s;
-      color: #334155;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .btn:hover {
-      background: #e2e8f0;
-      border-color: #94a3b8;
-    }
-
-    .btn-edit {
-      border-color: #60a5fa;
-      color: #2563eb;
-    }
-    .btn-edit:hover {
-      background: #dbeafe;
-      border-color: #3b82f6;
-    }
-
-    .btn-delete {
-      border-color: #f87171;
-      color: #dc2626;
-    }
-    .btn-delete:hover {
-      background: #fee2e2;
-      border-color: #ef4444;
-    }
-
-    .btn-primary {
-      background: #3b82f6;
-      border-color: #3b82f6;
-      color: #fff;
-    }
-    .btn-primary:hover {
-      background: #2563eb;
-      border-color: #2563eb;
-    }
-
-    .btn-success {
-      background: #22c55e;
-      border-color: #22c55e;
-      color: #fff;
-    }
-    .btn-success:hover {
-      background: #16a34a;
-      border-color: #16a34a;
-    }
-
-    .btn-danger {
-      background: #ef4444;
-      border-color: #ef4444;
-      color: #fff;
-    }
-    .btn-danger:hover {
-      background: #dc2626;
-      border-color: #dc2626;
-    }
-
-    /* Режим редактирования */
-    .edit-fields {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      width: 100%;
-      padding: 8px 0 4px;
-    }
-
-    .edit-fields input {
-      flex: 1 1 180px;
-      padding: 8px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 15px;
-      background: #fff;
-    }
-
-    .edit-fields input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-    }
-
-    .edit-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    /* Форма добавления */
-    .add-form {
-      background: #f1f5f9;
-      border-radius: 12px;
-      padding: 18px 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: flex-end;
-      border: 1px solid #e2e8f0;
-    }
-
-    .add-form .field {
-      flex: 1 1 160px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .add-form .field label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #475569;
-      letter-spacing: 0.3px;
-    }
-
-    .add-form .field input {
-      padding: 8px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 15px;
-      background: #fff;
-    }
-
-    .add-form .field input:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-    }
-
-    .add-form .btn-add {
-      padding: 8px 24px;
-      font-size: 15px;
-      align-self: center;
-      margin-bottom: 2px;
-    }
-
     .empty-message {
       text-align: center;
       color: #94a3b8;
       padding: 20px 0;
       font-style: italic;
     }
-
-    /* responsive */
-    @media (max-width: 500px) {
-      .container { padding: 20px 15px; }
-      .link-item { flex-direction: column; align-items: stretch; }
-      .link-item .actions { justify-content: flex-start; }
-      .add-form { flex-direction: column; align-items: stretch; }
-    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>
-      📖 Чтение 6 класс
-      <small>оглавление</small>
-    </h1>
+<div class="container">
+  <h1>📖 Чтение 6 класс <small>оглавление</small></h1>
 
-    <!-- Список ссылок -->
-    <ul class="link-list" id="linkList">
-      <!-- рендерится через JS -->
-    </ul>
+  <ul class="link-list" id="linkList"></ul>
+</div>
 
-    <!-- Форма добавления -->
-    <div class="add-form">
-      <div class="field">
-        <label for="newName">Название</label>
-        <input type="text" id="newName" placeholder="Например, Глава 1" />
-      </div>
-      <div class="field">
-        <label for="newUrl">Ссылка (URL)</label>
-        <input type="text" id="newUrl" placeholder="https://example.com" />
-      </div>
-      <button class="btn btn-primary btn-add" id="addBtn">➕ Добавить</button>
-    </div>
-  </div>
+<script>
+  // ============================================================
+  //  ОСНОВНОЙ МАССИВ СО ССЫЛКАМИ — РЕДАКТИРУЙТЕ ЕГО ВРУЧНУЮ
+  //  Формат: { id: 'уникальный_идентификатор', name: 'Название', url: 'https://...' }
+  //  id можно генерировать вручную (например, '1', '2'...) — они нужны для внутренней логики.
+  //  При добавлении новой ссылки просто вставьте новый объект внутрь массива.
+  //  После сохранения файла список автоматически отсортируется по алфавиту.
+  // ============================================================
+  const links = [
+    { id: '1', name: 'Золотой петушок', url: 'zolotoy_petushok/zolotoy_petushok.html' },
+    { id: '2', name: 'Азбука', url: 'https://example.com/chapter1' },
+    { id: '3', name: 'Название', url: 'https://example.com/chapter2' },
+    
+    // Добавляйте новые ссылки сюда, соблюдая формат
+  ];
+  // ============================================================
 
-  <script>
-    (function() {
-      // Ключ для localStorage
-      const STORAGE_KEY = 'reading6_links';
+  // Дальше код работает автоматически — ничего не трогаем.
 
-      // Начальные данные, если localStorage пуст
-      const defaultLinks = [
-        { id: '1', name: 'Введение', url: 'https://example.com/intro' },
-        { id: '2', name: 'Глава 1. Сказки', url: 'https://example.com/chapter1' },
-        { id: '3', name: 'Глава 2. Рассказы', url: 'https://example.com/chapter2' },
-        { id: '4', name: 'Глава 3. Стихи', url: 'https://example.com/chapter3' },
-      ];
+  const listEl = document.getElementById('linkList');
 
-      // Текущие данные
-      let links = [];
+  function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+  }
 
-      // DOM элементы
-      const listEl = document.getElementById('linkList');
-      const newNameInput = document.getElementById('newName');
-      const newUrlInput = document.getElementById('newUrl');
-      const addBtn = document.getElementById('addBtn');
+  function render() {
+    if (!listEl) return;
 
-      // ---- Вспомогательные функции ----
-      function generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-      }
+    // Сортировка по названию (без учёта регистра)
+    const sorted = [...links].sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+    );
 
-      // Загрузка из localStorage
-      function loadLinks() {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          try {
-            links = JSON.parse(stored);
-            // Проверим, что это массив
-            if (!Array.isArray(links)) links = [];
-          } catch (e) {
-            links = [];
-          }
-        }
-        // Если пусто или не массив — используем дефолтные
-        if (!links || links.length === 0) {
-          links = JSON.parse(JSON.stringify(defaultLinks)); // копия
-          saveLinks();
-        }
-      }
+    if (sorted.length === 0) {
+      listEl.innerHTML = `<li class="empty-message">📭 В списке пока нет ссылок.</li>`;
+      return;
+    }
 
-      // Сохранение в localStorage
-      function saveLinks() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
-      }
+    let html = '';
+    sorted.forEach(link => {
+      const name = link.name || 'Без названия';
+      const url = link.url || '#';
+      html += `
+        <li class="link-item">
+          <div class="link-info">
+            <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>
+            <span class="url-meta">${escapeHtml(url)}</span>
+          </div>
+        </li>
+      `;
+    });
 
-      // ---- Рендеринг ----
-      function render() {
-        if (!listEl) return;
+    listEl.innerHTML = html;
+  }
 
-        if (links.length === 0) {
-          listEl.innerHTML = `<li class="empty-message">📭 Нет добавленных ссылок. Создайте первую!</li>`;
-          return;
-        }
-
-        let html = '';
-        links.forEach(link => {
-          const isEditing = link._editing || false; // флаг редактирования
-          const name = link.name || 'Без названия';
-          const url = link.url || '#';
-
-          if (isEditing) {
-            // Режим редактирования
-            html += `
-              <li class="link-item" data-id="${link.id}">
-                <div class="edit-fields">
-                  <input type="text" class="edit-name" value="${escapeHtml(name)}" placeholder="Название" />
-                  <input type="text" class="edit-url" value="${escapeHtml(url)}" placeholder="URL" />
-                </div>
-                <div class="edit-actions">
-                  <button class="btn btn-success save-edit-btn">💾 Сохранить</button>
-                  <button class="btn btn-danger cancel-edit-btn">✖ Отмена</button>
-                </div>
-              </li>
-            `;
-          } else {
-            // Режим просмотра
-            html += `
-              <li class="link-item" data-id="${link.id}">
-                <div class="link-info">
-                  <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>
-                  <span class="url-meta">${escapeHtml(url)}</span>
-                </div>
-                <div class="actions">
-                  <button class="btn btn-edit edit-btn">✏️ Редактировать</button>
-                  <button class="btn btn-delete delete-btn">🗑️ Удалить</button>
-                </div>
-              </li>
-            `;
-          }
-        });
-
-        listEl.innerHTML = html;
-
-        // ---- Навешиваем обработчики (делегирование) ----
-        // Редактирование (кнопка "Редактировать")
-        listEl.querySelectorAll('.edit-btn').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            const li = this.closest('.link-item');
-            if (!li) return;
-            const id = li.dataset.id;
-            startEdit(id);
-          });
-        });
-
-        // Удаление
-        listEl.querySelectorAll('.delete-btn').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            const li = this.closest('.link-item');
-            if (!li) return;
-            const id = li.dataset.id;
-            if (confirm(`Удалить ссылку "${findLink(id)?.name || '?'}"?`)) {
-              deleteLink(id);
-            }
-          });
-        });
-
-        // Сохранить редактирование
-        listEl.querySelectorAll('.save-edit-btn').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            const li = this.closest('.link-item');
-            if (!li) return;
-            const id = li.dataset.id;
-            const nameInput = li.querySelector('.edit-name');
-            const urlInput = li.querySelector('.edit-url');
-            if (nameInput && urlInput) {
-              const newName = nameInput.value.trim() || 'Без названия';
-              const newUrl = urlInput.value.trim() || '#';
-              saveEdit(id, newName, newUrl);
-            }
-          });
-        });
-
-        // Отмена редактирования
-        listEl.querySelectorAll('.cancel-edit-btn').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            const li = this.closest('.link-item');
-            if (!li) return;
-            const id = li.dataset.id;
-            cancelEdit(id);
-          });
-        });
-      }
-
-      // ---- CRUD операции ----
-      function findLink(id) {
-        return links.find(l => l.id === id);
-      }
-
-      function addLink(name, url) {
-        if (!name.trim()) name = 'Без названия';
-        if (!url.trim()) url = '#';
-        const newLink = {
-          id: generateId(),
-          name: name.trim(),
-          url: url.trim(),
-        };
-        links.push(newLink);
-        saveLinks();
-        render();
-        // Очистить поля ввода
-        newNameInput.value = '';
-        newUrlInput.value = '';
-        newNameInput.focus();
-      }
-
-      function deleteLink(id) {
-        links = links.filter(l => l.id !== id);
-        saveLinks();
-        render();
-      }
-
-      function startEdit(id) {
-        const link = findLink(id);
-        if (!link) return;
-        // Убираем флаг редактирования у всех
-        links.forEach(l => l._editing = false);
-        link._editing = true;
-        render();
-        // После рендера автоматически фокус на первое поле
-        const li = document.querySelector(`.link-item[data-id="${id}"]`);
-        if (li) {
-          const inp = li.querySelector('.edit-name');
-          if (inp) inp.focus();
-        }
-      }
-
-      function saveEdit(id, newName, newUrl) {
-        const link = findLink(id);
-        if (!link) return;
-        link.name = newName.trim() || 'Без названия';
-        link.url = newUrl.trim() || '#';
-        link._editing = false;
-        saveLinks();
-        render();
-      }
-
-      function cancelEdit(id) {
-        const link = findLink(id);
-        if (!link) return;
-        link._editing = false;
-        render();
-      }
-
-      // ---- Вспомогательная для экранирования HTML ----
-      function escapeHtml(text) {
-        if (!text) return '';
-        const map = {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#039;'
-        };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-      }
-
-      // ---- Обработчик добавления ----
-      function handleAdd() {
-        const name = newNameInput.value.trim();
-        const url = newUrlInput.value.trim();
-        addLink(name, url);
-      }
-
-      // ---- Инициализация ----
-      loadLinks();
-      render();
-
-      // События для добавления
-      addBtn.addEventListener('click', handleAdd);
-      newNameInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          newUrlInput.focus();
-        }
-      });
-      newUrlInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleAdd();
-        }
-      });
-
-    })();
-  </script>
+  // Запускаем рендеринг при загрузке
+  render();
+</script>
 </body>
 </html>
