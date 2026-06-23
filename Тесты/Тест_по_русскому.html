@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Тест на грамотность</title>
+  <style>
+    /* ----- RESET & BASE ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+      background: linear-gradient(145deg, #f5edf9 0%, #e6dcec 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .quiz-wrapper {
+      width: 100%;
+      max-width: 700px;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(6px);
+      border-radius: 40px;
+      padding: 30px 28px 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.10), 0 8px 24px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s;
+    }
+
+    /* ----- ПРОГРЕСС ----- */
+    .progress {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      font-size: 0.9rem;
+      color: #5a4b6b;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .dots {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 20px;
+      background: #d5c6e0;
+      transition: 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .dot.active {
+      background: #7d5b9b;
+      width: 28px;
+    }
+
+    .dot.done {
+      background: #b392cf;
+    }
+
+    /* ----- ВОПРОСЫ ----- */
+    .question-block {
+      display: none;
+      animation: fade 0.3s ease;
+    }
+
+    .question-block.active {
+      display: block;
+    }
+
+    @keyframes fade {
+      0% { opacity: 0.2; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .question-number {
+      font-size: 0.85rem;
+      color: #7d5b9b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .question-text {
+      font-size: 1.3rem;
+      font-weight: 600;
+      line-height: 1.5;
+      color: #2c1f33;
+      margin-bottom: 24px;
+    }
+
+    /* ----- ВАРИАНТЫ ----- */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option {
+      background: #f5f0fa;
+      border: 2px solid transparent;
+      border-radius: 20px;
+      padding: 16px 20px;
+      font-size: 1.05rem;
+      color: #2c1f33;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .option:hover:not(.disabled) {
+      background: #ede6f5;
+      transform: scale(1.01);
+    }
+
+    .option.disabled {
+      cursor: default;
+      opacity: 0.8;
+    }
+
+    .option.correct {
+      border-color: #2e9b5c;
+      background: #d4edda;
+      box-shadow: 0 4px 12px rgba(46, 155, 92, 0.2);
+    }
+
+    .option.incorrect {
+      border-color: #c0392b;
+      background: #f8d7da;
+      box-shadow: 0 4px 12px rgba(192, 57, 43, 0.2);
+    }
+
+    .option.correct-highlight {
+      border-color: #2e9b5c;
+      background: #c3e6cb;
+      box-shadow: 0 4px 12px rgba(46, 155, 92, 0.3);
+    }
+
+    /* ----- НАВИГАЦИЯ ----- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+      gap: 15px;
+    }
+
+    .nav-btn {
+      background: #7d5b9b;
+      border: none;
+      color: white;
+      font-size: 1.3rem;
+      font-weight: 500;
+      padding: 14px 24px;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      min-width: 100px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 14px rgba(125, 91, 155, 0.25);
+      flex: 1;
+      border: none;
+    }
+
+    .nav-btn:active {
+      transform: scale(0.96);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .nav-btn.prev {
+      background: #d5c6e0;
+      color: #3d2b4a;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .nav-btn.prev:disabled {
+      opacity: 0.3;
+    }
+
+    .nav-btn.result-btn {
+      background: #c9a0e0;
+      color: #2c1f33;
+      font-weight: 600;
+      flex: 1.5;
+    }
+
+    .nav-btn.result-btn:not(:disabled) {
+      background: #a77ac2;
+      color: white;
+    }
+
+    /* ----- РЕЗУЛЬТАТ ----- */
+    .result-block {
+      display: none;
+      text-align: center;
+      padding: 10px 0 5px;
+    }
+
+    .result-block.active {
+      display: block;
+      animation: fade 0.4s ease;
+    }
+
+    .result-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #2c1f33;
+      margin-bottom: 10px;
+    }
+
+    .result-badge {
+      display: inline-block;
+      background: #7d5b9b;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 8px 24px;
+      border-radius: 60px;
+      margin-bottom: 18px;
+    }
+
+    .result-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #3d2b4a;
+      background: #f5f0fa;
+      padding: 20px 24px;
+      border-radius: 24px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+
+    .restart-btn {
+      background: #7d5b9b;
+      border: none;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 14px 36px;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 6px 14px rgba(125, 91, 155, 0.3);
+    }
+
+    .restart-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ----- АДАПТИВНОСТЬ ----- */
+    @media (max-width: 600px) {
+      .quiz-wrapper {
+        padding: 20px 16px 18px;
+        border-radius: 28px;
+      }
+      .question-text {
+        font-size: 1.1rem;
+      }
+      .option {
+        padding: 14px 16px;
+        font-size: 0.95rem;
+        border-radius: 16px;
+      }
+      .nav-btn {
+        padding: 12px 14px;
+        font-size: 1.1rem;
+        min-width: 70px;
+        flex: 1;
+      }
+      .nav-btn.result-btn {
+        font-size: 1rem;
+      }
+      .result-title {
+        font-size: 1.7rem;
+      }
+      .result-text {
+        font-size: 1rem;
+        padding: 16px 18px;
+      }
+      .dots {
+        gap: 5px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+      }
+      .dot.active {
+        width: 22px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .quiz-wrapper {
+        padding: 16px 12px;
+      }
+      .nav {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .nav-btn {
+        flex: 1 1 40%;
+        min-width: 60px;
+        padding: 12px 10px;
+        font-size: 1rem;
+      }
+      .nav-btn.result-btn {
+        flex: 1 1 100%;
+      }
+    }
+
+    /* убираем hover на touch-устройствах */
+    @media (hover: none) {
+      .option:hover:not(.disabled) {
+        transform: none;
+        background: #f5f0fa;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-wrapper" id="app">
+  <!-- Прогресс -->
+  <div class="progress">
+    <span id="stepLabel">Вопрос 1 из 10</span>
+    <div class="dots" id="dotsContainer"></div>
+  </div>
+
+  <!-- Контейнер для вопросов -->
+  <div id="questionsContainer"></div>
+
+  <!-- Блок результата (изначально скрыт) -->
+  <div class="result-block" id="resultBlock">
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-badge" id="resultBadge"></div>
+    <div class="result-text" id="resultText"></div>
+    <button class="restart-btn" id="restartBtn">🔄 Пройти заново</button>
+  </div>
+
+  <!-- Навигационные кнопки -->
+  <div class="nav" id="navButtons">
+    <button class="nav-btn prev" id="prevBtn" disabled>← Назад</button>
+    <button class="nav-btn" id="nextBtn">Вперёд →</button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ----- ДАННЫЕ ТЕСТА (JSON из предыдущего ответа) -----
+    const questions = [
+      {
+        "question": "1. «Кенгуру ____ в сумку яблоко». Какой вариант согласования верен? (Подсказка: род существительного «кенгуру» — это тест для смелых.)",
+        "options": [
+          "А) Кенгуру положил — я помню, что в зоопедии писали, он мужского рода",
+          "Б) Кенгуру положила — она же мама с детёнышем, интуиция подсказывает",
+          "В) Кенгуру положило — всё среднее, как «пальто», логично же",
+          "Г) Кенгуру положили — их много, пусть будет множественное"
+        ],
+        "scores": [1, 0, 0, 0]
+      },
+      {
+        "question": "2. Ты пишешь заявление: «Прошу предоставить отпуск в течение ____ дней». Как правильно написать числительное «полтораста» в предложном падеже? (Спойлер: это числительное — головная боль даже для филологов.)",
+        "options": [
+          "А) полутораста — классика, я знаю склонение",
+          "Б) полтораста — не склоняется, как и все числительные",
+          "В) полуторастах — разве не так?",
+          "Г) полутораст — сокращённо, для скорости"
+        ],
+        "scores": [1, 0, 0, 0]
+      },
+      {
+        "question": "3. Ты выступаешь на конференции и произносишь слово «обеспечение». Как правильно ударить, чтобы не прослыть неучем?",
+        "options": [
+          "А) ОбеспЕчение — на «Е», я слышал в новостях",
+          "Б) ОбеспечЕние — на третьем слоге, так учат в вузах",
+          "В) Обеспечённое — я ударю на Ё, будет весело",
+          "Г) Без ударения — просто скажу и всё"
+        ],
+        "scores": [0, 1, 0, 0]
+      },
+      {
+        "question": "4. Ты пишешь эссе: «Я был ____ взволнован этой новостью». Сколько букв «н» нужно написать в наречии? (Правило — коварное, проверь себя.)",
+        "options": [
+          "А) Одна «н» — взволнован, краткое причастие",
+          "Б) Две «н» — взволнованно, наречие от прилагательного",
+          "В) Три «н» — для усиления эмоций",
+          "Г) С «ь» на конце — взволновань, это же мягкость"
+        ],
+        "scores": [0, 1, 0, 0]
+      },
+      {
+        "question": "5. Ты слышишь, как кто-то говорит: «Наши профессоры уехали на конференцию». Твои действия? (Форма множественного числа от «профессор» — ловушка для современных грамотеев.)",
+        "options": [
+          "А) Поправлю: правильно «профессора» (с ударением на «а»)",
+          "Б) Скажу: «профессоры» — норма, так в словарях",
+          "В) Промолчу, пусть говорят, как хотят",
+          "Г) Скажу: «профессора» — это в родительном падеже, а здесь именительный"
+        ],
+        "scores": [1, 0, 0, 0]
+      },
+      {
+        "question": "6. «Он ____ мне отчёт о работе». Какой глагол точнее по смыслу? (Различие «представить» и «предоставить» — камень преткновения.)",
+        "options": [
+          "А) Представил — он же показал документ",
+          "Б) Предоставил — он дал возможность ознакомиться",
+          "В) Предъявил — а это вообще третье",
+          "Г) Подал — и не заморачиваться"
+        ],
+        "scores": [1, 0, 0, 0] 
+      },
+      {
+        "question": "7. «Мы победили ____ упорству и труду». Какой падеж требует предлог «благодаря»? (Проверка на чувство языка.)",
+        "options": [
+          "А) Благодаря упорству — дательный, я знаю",
+          "Б) Благодаря упорства — родительный, так звучит лучше",
+          "В) Благодаря упорством — творительный, ведь «благодаря» как «с помощью»",
+          "Г) Благодаря упорство — винительный, просто привык"
+        ],
+        "scores": [1, 0, 0, 0]
+      },
+      {
+        "question": "8. «НИИ ____ новую разработку». Согласуйте сказуемое с аббревиатурой. (Главное слово — мужской род, но многие ошибаются.)",
+        "options": [
+          "А) НИИ представил — по главному слову «институт»",
+          "Б) НИИ представило — средний род, как и звучит",
+          "В) НИИ представила — женский, почему нет?",
+          "Г) НИИ представили — раз там много учёных"
+        ],
+        "scores": [1, 0, 0, 0]
+      },
+      {
+        "question": "9. Ты заполняешь анкету и пишешь: «Мой ____ — Владимир Путин». Правильное написание слова «президент» — это исключение или правило? (Тут не всё так просто.)",
+        "options": [
+          "А) Президент — потому что приставка «пре-» в значении «очень»",
+          "Б) Призидент — потому что «при-» означает присоединение",
+          "В) Президент — это словарное слово, запоминаем",
+          "Г) Президент — с двумя «е», я так в школе учил"
+        ],
+        "scores": [0, 0, 1, 0]
+      },
+      {
+        "question": "10. «____, он вышел из комнаты». Где нужно поставить запятую? (Проверка на пунктуационную зоркость.)",
+        "options": [
+          "А) Пообедав, он вышел — деепричастный оборот обособляется",
+          "Б) Пообедав он вышел — без запятой, если действие тесно связано",
+          "В) Пообедав, он, вышел — две запятые для красоты",
+          "Г) Пообедал он вышел — вообще без запятых"
+        ],
+        "scores": [1, 0, 0, 0]
+      }
+    ];
+
+    const results = [
+      {
+        "min": 0,
+        "max": 2,
+        "title": "📉 Анти-грамотей",
+        "text": "Ты набрал меньше трёх баллов. Возможно, ты учил русский по фильмам с Джеки Чаном. Но не отчаивайся: главное, что ты умеешь говорить «привет» и «спасибо», а остальное — дело техники. Рекомендуем начать с чтения подписей под мемами."
+      },
+      {
+        "min": 3,
+        "max": 5,
+        "title": "📖 Ученик вечерней школы",
+        "text": "Ты что-то знаешь, но всё путаешь. Ты можешь написать «в течении» вместо «в течение», но в чате тебя поймут. Ты тот человек, который говорит «звОнит» нарочно, чтобы позлить лингвистов. Продолжай учиться, и, возможно, ты перестанешь путать «одеть» и «надеть»."
+      },
+      {
+        "min": 6,
+        "max": 8,
+        "title": "🎓 Грамотный обыватель",
+        "text": "Ты уверенно различаешь «представить» и «предоставить», не пасуешь перед «полутораста» и знаешь, что кенгуру — он. Ты почти как филолог, но иногда у тебя вырывается «ихний» в пылу спора. За это мы тебя прощаем. Ты — опора своей компании в спорах о русском языке."
+      },
+      {
+        "min": 9,
+        "max": 10,
+        "title": "🏆 Гуру филологии",
+        "text": "Ты с лёгкостью прошёл наш суровый тест! Ты знаешь больше, чем некоторые преподаватели. Ты помнишь, что «кенгуру» — мужского рода, а «профессора» — это норма. Твоя речь безупречна, а пунктуация — как у Чехова. Гордись собой, ты — национальное достояние. Но не расслабляйся: даже академики иногда сомневаются в ударении «творог»."
+      }
+    ];
+
+    // ----- СОСТОЯНИЕ -----
+    let currentStep = 0;          // 0..9
+    const totalQuestions = questions.length;
+    const selectedAnswers = new Array(totalQuestions).fill(null); // индексы выбранных ответов
+
+    // DOM-элементы
+    const questionsContainer = document.getElementById('questionsContainer');
+    const resultBlock = document.getElementById('resultBlock');
+    const navButtons = document.getElementById('navButtons');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const stepLabel = document.getElementById('stepLabel');
+    const dotsContainer = document.getElementById('dotsContainer');
+
+    const resultTitle = document.getElementById('resultTitle');
+    const resultBadge = document.getElementById('resultBadge');
+    const resultText = document.getElementById('resultText');
+    const restartBtn = document.getElementById('restartBtn');
+
+    // ----- ОТРИСОВКА ТОЧЕК -----
+    function renderDots() {
+      dotsContainer.innerHTML = '';
+      for (let i = 0; i < totalQuestions; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        if (i === currentStep && currentStep < totalQuestions) dot.classList.add('active');
+        if (selectedAnswers[i] !== null) dot.classList.add('done');
+        dotsContainer.appendChild(dot);
+      }
+    }
+
+    function updateDots() {
+      const dots = dotsContainer.children;
+      for (let i = 0; i < totalQuestions; i++) {
+        dots[i].className = 'dot';
+        if (i === currentStep && currentStep < totalQuestions) dots[i].classList.add('active');
+        if (selectedAnswers[i] !== null) dots[i].classList.add('done');
+      }
+    }
+
+    // ----- ОТРИСОВКА ВОПРОСА -----
+    function renderQuestion(index) {
+      if (index >= totalQuestions) return;
+      const q = questions[index];
+      const selected = selectedAnswers[index]; // может быть null
+
+      let html = `<div class="question-block active">`;
+      html += `<div class="question-number">Вопрос ${index+1} из ${totalQuestions}</div>`;
+      html += `<div class="question-text">${q.question}</div>`;
+      html += `<div class="options">`;
+
+      // Для каждого варианта определяем классы
+      q.options.forEach((opt, optIndex) => {
+        let classes = 'option';
+        const isSelected = (selected === optIndex);
+        const isCorrect = (q.scores[optIndex] === 1);
+
+        if (selected !== null) {
+          // Вопрос уже отвечен – показываем обратную связь
+          if (isSelected) {
+            classes += isCorrect ? ' correct' : ' incorrect';
+          } else if (isCorrect && !isSelected) {
+            // Если выбранный ответ неправильный, правильный подсвечиваем
+            if (q.scores[selected] === 0) {
+              classes += ' correct-highlight';
+            }
+          }
+          // Все варианты становятся неактивными
+          classes += ' disabled';
+        } else {
+          // Вопрос ещё не отвечен – обычное состояние
+          // (навешиваем обработчик)
+        }
+
+        html += `<div class="${classes}" data-q="${index}" data-opt="${optIndex}">${opt}</div>`;
+      });
+
+      html += `</div></div>`;
+      questionsContainer.innerHTML = html;
+
+      // Навесить обработчики только если ещё не выбран ответ
+      if (selected === null) {
+        document.querySelectorAll('.option:not(.disabled)').forEach(el => {
+          el.addEventListener('click', function(e) {
+            const qIdx = parseInt(this.dataset.q);
+            const optIdx = parseInt(this.dataset.opt);
+            selectOption(qIdx, optIdx);
+          });
+        });
+      }
+
+      stepLabel.textContent = `Вопрос ${index+1} из ${totalQuestions}`;
+      updateDots();
+    }
+
+    // ----- ВЫБОР ОТВЕТА -----
+    function selectOption(qIdx, optIdx) {
+      if (qIdx !== currentStep) return; // только для текущего вопроса
+      if (selectedAnswers[qIdx] !== null) return; // уже выбрано
+      selectedAnswers[qIdx] = optIdx;
+      renderQuestion(currentStep);     // перерисовать с feedback
+      updateDots();
+      updateNav();                     // разблокировать кнопку
+    }
+
+    // ----- НАВИГАЦИЯ -----
+    function goPrev() {
+      if (currentStep > 0) {
+        currentStep--;
+        renderQuestion(currentStep);
+        updateNav();
+      }
+    }
+
+    function goNext() {
+      if (currentStep < totalQuestions) {
+        // Проверяем, выбран ли ответ
+        if (selectedAnswers[currentStep] === null) {
+          alert('Пожалуйста, выберите вариант ответа!');
+          return;
+        }
+        // Если последний вопрос — показываем результат
+        if (currentStep === totalQuestions - 1) {
+          showResult();
+          return;
+        }
+        // Иначе переходим к следующему
+        currentStep++;
+        renderQuestion(currentStep);
+        updateNav();
+      }
+    }
+
+    // ----- ОБНОВЛЕНИЕ КНОПОК -----
+    function updateNav() {
+      prevBtn.disabled = (currentStep === 0);
+
+      if (currentStep < totalQuestions) {
+        const isAnswered = (selectedAnswers[currentStep] !== null);
+        if (currentStep === totalQuestions - 1) {
+          // Последний вопрос
+          nextBtn.textContent = '🎯 Показать результат';
+          nextBtn.className = 'nav-btn result-btn';
+          nextBtn.disabled = !isAnswered;
+        } else {
+          nextBtn.textContent = 'Вперёд →';
+          nextBtn.className = 'nav-btn';
+          nextBtn.disabled = !isAnswered;
+        }
+      } else {
+        // не используется
+        nextBtn.disabled = true;
+        prevBtn.disabled = true;
+      }
+    }
+
+    // ----- ПОКАЗ РЕЗУЛЬТАТА -----
+    function showResult() {
+      // Подсчёт баллов
+      let totalScore = 0;
+      for (let i = 0; i < totalQuestions; i++) {
+        const idx = selectedAnswers[i];
+        if (idx !== null) {
+          totalScore += questions[i].scores[idx];
+        }
+      }
+
+      // Поиск подходящего результата
+      let result = results.find(r => totalScore >= r.min && totalScore <= r.max);
+      if (!result) result = results[results.length - 1]; // fallback
+
+      // Заполняем блок результата
+      resultTitle.textContent = result.title;
+      resultBadge.textContent = `Баллы: ${totalScore} из ${totalQuestions}`;
+      resultText.innerHTML = result.text;
+
+      // Прячем вопросы и навигацию, показываем результат
+      questionsContainer.style.display = 'none';
+      navButtons.style.display = 'none';
+      resultBlock.classList.add('active');
+
+      // Обновляем прогресс (все точки становятся done)
+      stepLabel.textContent = '🎉 Тест пройден!';
+      const dots = dotsContainer.children;
+      for (let i = 0; i < totalQuestions; i++) {
+        dots[i].className = 'dot done';
+      }
+    }
+
+    // ----- ПЕРЕЗАПУСК -----
+    function restartQuiz() {
+      currentStep = 0;
+      for (let i = 0; i < totalQuestions; i++) {
+        selectedAnswers[i] = null;
+      }
+
+      questionsContainer.style.display = 'block';
+      navButtons.style.display = 'flex';
+      resultBlock.classList.remove('active');
+
+      renderQuestion(0);
+      updateNav();
+      stepLabel.textContent = `Вопрос 1 из ${totalQuestions}`;
+      renderDots(); // сброс точек
+    }
+
+    // ----- ИНИЦИАЛИЗАЦИЯ -----
+    function init() {
+      renderDots();
+      renderQuestion(0);
+      updateNav();
+
+      // Обработчики
+      prevBtn.addEventListener('click', goPrev);
+      nextBtn.addEventListener('click', goNext);
+      restartBtn.addEventListener('click', restartQuiz);
+    }
+
+    init();
+  })();
+</script>
+
+</body>
+</html>
