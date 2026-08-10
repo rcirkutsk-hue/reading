@@ -1,0 +1,851 @@
+<!-- 
+ИНСТРУКЦИЯ:
+1. Сохраните этот код как файл presentation.html
+2. Создайте папку images и положите туда картинки:
+   - title.jpg — обложка/титульная картинка
+   - 1.jpg, 2.jpg, ... 12.jpg — иллюстрации к каждому предложению
+3. Откройте presentation.html в браузере
+-->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Русалочка — адаптированная сказка</title>
+    <style>
+        /* Пастельная детская стилистика */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
+            background: #fdf8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .presentation-container {
+            width: 100%;
+            max-width: 1000px;
+            background: #fffbf7;
+            border-radius: 60px 60px 40px 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.05);
+            padding: 30px 30px 20px;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            animation: fade 0.4s ease;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fade {
+            0% { opacity: 0.4; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Титульный слайд */
+        .title-slide {
+            text-align: center;
+            gap: 20px;
+        }
+        .title-slide h1 {
+            font-size: 4rem;
+            color: #f09b9b;
+            text-shadow: 4px 4px 0 #fcd5d5;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+        .title-slide img {
+            max-width: 80%;
+            max-height: 300px;
+            border-radius: 40px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            object-fit: cover;
+            border: 6px solid #ffe1d0;
+        }
+        .title-slide p {
+            font-size: 1.6rem;
+            color: #7fa9b6;
+            background: #eaf4f0;
+            padding: 12px 30px;
+            border-radius: 60px;
+            display: inline-block;
+        }
+
+        /* Слайд с текстом и картинкой */
+        .story-slide {
+            gap: 20px;
+            padding: 10px 0;
+        }
+        .story-slide .sentence {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #4a6b7a;
+            text-align: center;
+            background: #f9efe6;
+            padding: 20px 30px;
+            border-radius: 60px;
+            box-shadow: inset 0 -4px 0 #dcc9bc;
+            max-width: 90%;
+            line-height: 1.4;
+        }
+        .story-slide img {
+            max-width: 80%;
+            max-height: 350px;
+            border-radius: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 6px solid #ffdbb5;
+            object-fit: cover;
+            background: #f5ede5;
+        }
+        .slide-counter {
+            font-size: 1.4rem;
+            color: #b0a8a0;
+            margin-top: 8px;
+            background: #f0ebe7;
+            padding: 6px 20px;
+            border-radius: 40px;
+        }
+
+        /* Слайд вопроса */
+        .question-slide {
+            gap: 25px;
+            padding: 15px 0;
+            max-width: 90%;
+        }
+        .question-slide .q-text {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #4a6b7a;
+            text-align: center;
+            background: #e3f0f5;
+            padding: 18px 25px;
+            border-radius: 50px;
+            width: 100%;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .options-grid button {
+            background: #fcf5ed;
+            border: 4px solid #dccfc4;
+            border-radius: 50px;
+            padding: 18px 8px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #2d4a5a;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 4px 0 #b8a99c;
+            font-family: inherit;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .options-grid button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #b8a99c;
+        }
+        .options-grid button:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b8a99c;
+        }
+        .options-grid button.correct {
+            background: #b5d6b0;
+            border-color: #6d9e6d;
+            box-shadow: 0 4px 0 #4f7a4f;
+        }
+        .options-grid button.wrong {
+            background: #f3b3b3;
+            border-color: #c27a7a;
+            box-shadow: 0 4px 0 #8f5a5a;
+        }
+        .options-grid button.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .question-feedback {
+            font-size: 1.8rem;
+            min-height: 3rem;
+            font-weight: 500;
+        }
+        .hint-area {
+            font-size: 1.2rem;
+            color: #6f8f9c;
+            background: #edf6f0;
+            padding: 8px 20px;
+            border-radius: 40px;
+            display: inline-block;
+        }
+
+        /* Слайды упражнений: сравнение, подсказки, сортировка, сетка */
+        .exercise-slide {
+            gap: 20px;
+            padding: 15px 0;
+            width: 100%;
+        }
+        .exercise-slide h2 {
+            font-size: 2.2rem;
+            color: #6b8c9e;
+            background: #e1f0e8;
+            padding: 8px 30px;
+            border-radius: 60px;
+            margin-bottom: 10px;
+        }
+
+        /* Сетка для подсказок и галереи */
+        .grid-thumbs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #fbf3ec;
+            border-radius: 40px;
+            border: 4px solid #eadcd2;
+        }
+        .grid-thumbs .thumb-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fffcf7;
+            border-radius: 20px;
+            padding: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .grid-thumbs .thumb-item img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 3px solid #e6d6c8;
+        }
+        .grid-thumbs .thumb-item span {
+            margin-top: 6px;
+            font-size: 1.1rem;
+            color: #5e7a86;
+            font-weight: 600;
+        }
+
+        /* Сортировка (drag & drop) */
+        .sort-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 700px;
+            background: #faf2ea;
+            padding: 20px;
+            border-radius: 40px;
+            border: 4px dashed #dacbc0;
+            min-height: 400px;
+        }
+        .sort-item {
+            background: #fffcf7;
+            border: 3px solid #cbb8ab;
+            border-radius: 50px;
+            padding: 14px 20px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #2d4a5a;
+            cursor: grab;
+            box-shadow: 0 4px 0 #b5a396;
+            transition: 0.1s;
+            text-align: center;
+        }
+        .sort-item:active {
+            cursor: grabbing;
+            opacity: 0.6;
+        }
+        .sort-item.dragging {
+            opacity: 0.3;
+        }
+        .sort-item.drag-over {
+            border-color: #6fa3b0;
+            background: #e3f0f0;
+        }
+        .sort-check {
+            margin-top: 15px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4f8a7a;
+        }
+
+        /* Сравнение: выбрать картинку к предложению */
+        .compare-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+        .compare-sentence {
+            font-size: 2rem;
+            background: #f3e8dd;
+            padding: 18px 30px;
+            border-radius: 60px;
+            text-align: center;
+            max-width: 90%;
+        }
+        .compare-images {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .compare-images .cmp-img {
+            background: #fffcf7;
+            border: 6px solid #e6d6c8;
+            border-radius: 30px;
+            padding: 8px;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 4px 0 #c5b4a6;
+        }
+        .compare-images .cmp-img:hover {
+            transform: scale(1.02);
+        }
+        .compare-images .cmp-img.selected {
+            border-color: #6fa3b0;
+            box-shadow: 0 0 0 6px #b8d8e0;
+        }
+        .compare-images .cmp-img img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+        .compare-feedback {
+            font-size: 1.8rem;
+        }
+
+        /* Панель навигации */
+        .nav-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 4px solid #eedfd6;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .nav-btn {
+            background: #fce5d4;
+            border: none;
+            border-radius: 60px;
+            padding: 12px 30px;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #4d6877;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #d2b9aa;
+            transition: 0.1s;
+            font-family: inherit;
+            min-width: 120px;
+        }
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #d2b9aa;
+        }
+        .nav-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #d2b9aa;
+        }
+        .nav-btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+            transform: none;
+        }
+        .slide-indicator {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #d6cbc3;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .dot.active {
+            background: #f09b9b;
+            transform: scale(1.2);
+            box-shadow: 0 0 0 4px #fcd5d5;
+        }
+        .dot:hover {
+            background: #b8a89c;
+        }
+
+        @media (max-width: 700px) {
+            .presentation-container { padding: 15px; }
+            .title-slide h1 { font-size: 2.8rem; }
+            .story-slide .sentence { font-size: 1.6rem; padding: 15px; }
+            .question-slide .q-text { font-size: 1.5rem; }
+            .options-grid { grid-template-columns: 1fr; }
+            .options-grid button { font-size: 1.2rem; padding: 14px; }
+            .grid-thumbs { grid-template-columns: repeat(auto-fill, minmax(80px,1fr)); }
+            .nav-btn { font-size: 1.2rem; padding: 10px 18px; min-width: 80px; }
+        }
+    </style>
+</head>
+<body>
+<div class="presentation-container" id="app">
+    <!-- Слайды будут вставлены сюда через JS -->
+    <div id="slidesContainer"></div>
+
+    <!-- Панель навигации -->
+    <div class="nav-panel">
+        <button class="nav-btn" id="prevBtn">◀ Назад</button>
+        <div class="slide-indicator" id="dots"></div>
+        <button class="nav-btn" id="nextBtn">Вперед ▶</button>
+    </div>
+</div>
+<script>
+    // ------------------------------------------------------------
+    //  ДАННЫЕ: 12 предложений и 12 вопросов (по шаблону)
+    // ------------------------------------------------------------
+    const sentences = [
+        "В море жил царь с шестью русалками.",
+        "Младшая русалочка любила слушать о людях.",
+        "Она поднялась на поверхность в день рождения принца.",
+        "Она увидела принца и влюбилась.",
+        "Ночью поднялась буря, корабль разбился.",
+        "Русалочка спасла принца и отнесла на берег.",
+        "Она пошла к морской ведьме за помощью.",
+        "Ведьма дала ей ноги вместо хвоста.",
+        "За это ведьма забрала её голос.",
+        "Принц полюбил другую девушку и женился.",
+        "Русалочка должна была убить принца, но не сделала.",
+        "На рассвете она стала морской пеной."
+    ];
+
+    const questions = [
+        { text: "Кто является главной героиней сказки?",
+          options: ["Морской царь", "Младшая русалочка", "Принц", "Морская ведьма"],
+          correctIndex: 1, hintImageIndex: 1, isAuthorQuestion: false },
+        { text: "О чём эта сказка?",
+          options: ["О том, как русалочка пожертвовала собой ради любимого", "О жизни морских животных", "О том, как принц искал невесту", "О колдовстве ведьмы"],
+          correctIndex: 0, hintImageIndex: 11, isAuthorQuestion: false },
+        { text: "Кто написал эту сказку?",
+          options: ["Шарль Перро", "Братья Гримм", "Ганс Христиан Андерсен", "Александр Пушкин"],
+          correctIndex: 2, hintImageIndex: null, isAuthorQuestion: true },
+        { text: "Где жил морской царь?",
+          options: ["В реке", "В озере", "В море", "В океанариуме"],
+          correctIndex: 2, hintImageIndex: 0, isAuthorQuestion: false },
+        { text: "Сколько дочерей было у морского царя?",
+          options: ["Три", "Шесть", "Двенадцать", "Одна"],
+          correctIndex: 1, hintImageIndex: 0, isAuthorQuestion: false },
+        { text: "Что случилось с кораблём принца ночью?",
+          options: ["Он причалил к берегу", "Он уплыл в другое море", "Он разбился во время бури", "Он превратился в пену"],
+          correctIndex: 2, hintImageIndex: 4, isAuthorQuestion: false },
+        { text: "Кто спас принца и вынес его на берег?",
+          options: ["Морская ведьма", "Другая девушка", "Русалочка", "Морской царь"],
+          correctIndex: 2, hintImageIndex: 5, isAuthorQuestion: false },
+        { text: "Что ведьма дала русалочке вместо хвоста?",
+          options: ["Крылья", "Плавники", "Ноги", "Змеиный хвост"],
+          correctIndex: 2, hintImageIndex: 7, isAuthorQuestion: false },
+        { text: "Что ведьма забрала у русалочки за помощь?",
+          options: ["Зрение", "Голос", "Память", "Красоту"],
+          correctIndex: 1, hintImageIndex: 8, isAuthorQuestion: false },
+        { text: "На ком в итоге женился принц?",
+          options: ["На русалочке", "На другой девушке", "На ведьме", "Ни на ком"],
+          correctIndex: 1, hintImageIndex: 9, isAuthorQuestion: false },
+        { text: "Почему русалочка пошла к ведьме?",
+          options: ["Чтобы получить богатство", "Чтобы стать человеком и быть рядом с принцем", "Чтобы отомстить принцу", "Чтобы вернуться домой"],
+          correctIndex: 1, hintImageIndex: 3, isAuthorQuestion: false },
+        { text: "Почему русалочка не убила принца, хотя должна была?",
+          options: ["Она испугалась ведьмы", "Она не умела держать нож", "Она всё ещё любила принца", "Она хотела стать пеной"],
+          correctIndex: 2, hintImageIndex: 10, isAuthorQuestion: false }
+    ];
+
+    // ------------------------------------------------------------
+    //  ПОСТРОЕНИЕ ПРЕЗЕНТАЦИИ
+    // ------------------------------------------------------------
+    const container = document.getElementById('slidesContainer');
+    let slides = [];
+
+    // 1. Титульный слайд
+    const titleSlide = document.createElement('div');
+    titleSlide.className = 'slide title-slide';
+    titleSlide.innerHTML = `
+        <h1>🐚 Русалочка</h1>
+        <img src="images/title.jpg" alt="Титульная картинка" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f4e2d7%22 width=%22400%22 height=%22300%22/%3E%3Ctext x=%2250%22 y=%22150%22 font-size=%2230%22 fill=%22%239f7b6b%22%3Etitle.jpg%3C/text%3E%3C/svg%3E'">
+        <p>Сказка для детей</p>
+    `;
+    slides.push(titleSlide);
+
+    // 2. Слайды с предложениями (12)
+    sentences.forEach((sent, idx) => {
+        const slide = document.createElement('div');
+        slide.className = 'slide story-slide';
+        slide.innerHTML = `
+            <div class="sentence">${sent}</div>
+            <img src="images/${idx+1}.jpg" alt="Иллюстрация ${idx+1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f4e2d7%22 width=%22400%22 height=%22300%22/%3E%3Ctext x=%2250%22 y=%22150%22 font-size=%2230%22 fill=%22%239f7b6b%22%3E${idx+1}.jpg%3C/text%3E%3C/svg%3E'">
+            <div class="slide-counter">${idx+1} / 12</div>
+        `;
+        slides.push(slide);
+    });
+
+    // 3. Слайды вопросов (12)
+    questions.forEach((q, qIdx) => {
+        const slide = document.createElement('div');
+        slide.className = 'slide question-slide';
+        slide.dataset.qIndex = qIdx;
+        slide.innerHTML = `
+            <div class="q-text">${q.text}</div>
+            <div class="options-grid" id="options-${qIdx}">
+                ${q.options.map((opt, oi) => `<button data-optindex="${oi}">${String.fromCharCode(65+oi)}) ${opt}</button>`).join('')}
+            </div>
+            <div class="question-feedback" id="fb-${qIdx}"></div>
+            <div class="hint-area">${q.isAuthorQuestion ? '📖 Автор' : (q.hintImageIndex !== null ? `💡 Подсказка: картинка №${q.hintImageIndex+1}` : '')}</div>
+        `;
+        slides.push(slide);
+    });
+
+    // 4. Слайд "Подсказки" (все картинки с номерами)
+    const hintSlide = document.createElement('div');
+    hintSlide.className = 'slide exercise-slide';
+    hintSlide.innerHTML = `
+        <h2>📸 Все картинки-подсказки</h2>
+        <div class="grid-thumbs">
+            ${sentences.map((_, i) => `
+                <div class="thumb-item">
+                    <img src="images/${i+1}.jpg" alt="Картинка ${i+1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Crect fill=%22%23f4e2d7%22 width=%22120%22 height=%22120%22/%3E%3Ctext x=%2220%22 y=%2260%22 font-size=%2220%22 fill=%22%239f7b6b%22%3E${i+1}%3C/text%3E%3C/svg%3E'">
+                    <span>№${i+1}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    slides.push(hintSlide);
+
+    // 5. Слайд "Сетка" (галерея картинок, можно такую же, но без номеров)
+    const gridSlide = document.createElement('div');
+    gridSlide.className = 'slide exercise-slide';
+    gridSlide.innerHTML = `
+        <h2>🖼️ Галерея</h2>
+        <div class="grid-thumbs">
+            ${sentences.map((_, i) => `
+                <div class="thumb-item">
+                    <img src="images/${i+1}.jpg" alt="Картинка ${i+1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22%3E%3Crect fill=%22%23f4e2d7%22 width=%22120%22 height=%22120%22/%3E%3Ctext x=%2220%22 y=%2260%22 font-size=%2220%22 fill=%22%239f7b6b%22%3E${i+1}%3C/text%3E%3C/svg%3E'">
+                </div>
+            `).join('')}
+        </div>
+    `;
+    slides.push(gridSlide);
+
+    // 6. Слайд "Сравнение" – выбрать правильную картинку к предложению (используем первые 4 предложения для простоты)
+    const compareSlide = document.createElement('div');
+    compareSlide.className = 'slide exercise-slide';
+    compareSlide.innerHTML = `
+        <h2>🔍 Найди картинку к предложению</h2>
+        <div class="compare-area" id="compareArea">
+            <div class="compare-sentence" id="compareSentence">${sentences[0]}</div>
+            <div class="compare-images" id="compareImages">
+                ${[0,1,2,3].map(i => `
+                    <div class="cmp-img" data-imgidx="${i}">
+                        <img src="images/${i+1}.jpg" alt="Вариант ${i+1}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f4e2d7%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2230%22 y=%2275%22 font-size=%2225%22 fill=%22%239f7b6b%22%3E${i+1}%3C/text%3E%3C/svg%3E'">
+                    </div>
+                `).join('')}
+            </div>
+            <div class="compare-feedback" id="compareFeedback">Выбери картинку</div>
+        </div>
+    `;
+    slides.push(compareSlide);
+
+    // 7. Слайд "Сортировка" – перетащи предложения в правильном порядке
+    const sortSlide = document.createElement('div');
+    sortSlide.className = 'slide exercise-slide';
+    // Перемешаем предложения
+    const shuffled = [...sentences];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    sortSlide.innerHTML = `
+        <h2>🧩 Расставь по порядку</h2>
+        <div class="sort-container" id="sortContainer">
+            ${shuffled.map((s, idx) => `<div class="sort-item" draggable="true" data-original="${sentences.indexOf(s)}">${s}</div>`).join('')}
+        </div>
+        <div class="sort-check" id="sortCheck"></div>
+    `;
+    slides.push(sortSlide);
+
+    // Вставляем все слайды в контейнер
+    slides.forEach(s => container.appendChild(s));
+
+    // ------------------------------------------------------------
+    //  НАВИГАЦИЯ И ИНТЕРАКТИВНОСТЬ
+    // ------------------------------------------------------------
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dotsContainer = document.getElementById('dots');
+
+    function updateSlide(index) {
+        slides.forEach((s, i) => s.classList.toggle('active', i === index));
+        currentSlide = index;
+        updateDots();
+        prevBtn.disabled = (index === 0);
+        nextBtn.disabled = (index === totalSlides - 1);
+        // Прокрутка к верху слайда
+        document.querySelector('.presentation-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function updateDots() {
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'dot' + (i === currentSlide ? ' active' : '');
+            dot.setAttribute('data-index', i);
+            dot.addEventListener('click', () => { updateSlide(i); });
+            dotsContainer.appendChild(dot);
+        }
+    }
+
+    prevBtn.addEventListener('click', () => { if (currentSlide > 0) updateSlide(currentSlide - 1); });
+    nextBtn.addEventListener('click', () => { if (currentSlide < totalSlides - 1) updateSlide(currentSlide + 1); });
+
+    // Обработка ответов на вопросы
+    document.querySelectorAll('.question-slide').forEach((slide, qIdx) => {
+        const buttons = slide.querySelectorAll('.options-grid button');
+        const feedback = slide.querySelector('.question-feedback');
+        const correct = questions[qIdx].correctIndex;
+        const hintImg = questions[qIdx].hintImageIndex;
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+                const selected = parseInt(this.dataset.optindex);
+                const isCorrect = (selected === correct);
+                // Отключаем все кнопки на этом слайде
+                buttons.forEach(b => b.classList.add('disabled'));
+                // Подсвечиваем правильный и неправильный
+                buttons.forEach((b, i) => {
+                    if (i === correct) b.classList.add('correct');
+                    else if (i === selected && !isCorrect) b.classList.add('wrong');
+                });
+                // Выводим фидбек
+                feedback.textContent = isCorrect ? '✅ Правильно! Молодец!' : '❌ Неверно, попробуй ещё раз (нажми "Вперед" и вернись)';
+                // Разрешаем повторный клик через сброс при переключении слайда
+                // Но мы не сбрасываем автоматически, чтобы ребенок видел ответ.
+                // При следующем переходе на этот слайд кнопки снова станут активными? 
+                // Мы сделаем сброс при показе слайда.
+            });
+        });
+    });
+
+    // При переключении слайда сбрасываем состояние вопросов (чтобы можно было снова отвечать)
+    // Но мы также хотим сохранить ответ, если пользователь вернулся? Лучше сбрасывать, чтобы была возможность переотвечать.
+    // Будем сбрасывать при переходе на слайд вопроса.
+    function resetQuestionSlide(slide) {
+        const buttons = slide.querySelectorAll('.options-grid button');
+        const feedback = slide.querySelector('.question-feedback');
+        buttons.forEach(b => {
+            b.classList.remove('correct', 'wrong', 'disabled');
+        });
+        if (feedback) feedback.textContent = '';
+    }
+
+    // Переопределим updateSlide для сброса
+    const originalUpdate = updateSlide;
+    updateSlide = function(index) {
+        // Если текущий слайд был вопросом, сбрасываем его
+        const currentSlideEl = slides[currentSlide];
+        if (currentSlideEl && currentSlideEl.classList.contains('question-slide')) {
+            resetQuestionSlide(currentSlideEl);
+        }
+        originalUpdate(index);
+        // Если новый слайд - вопрос, тоже сбросим (на всякий случай)
+        const newSlide = slides[index];
+        if (newSlide && newSlide.classList.contains('question-slide')) {
+            resetQuestionSlide(newSlide);
+        }
+        // Для слайда сравнения сбросим выделение
+        if (newSlide && newSlide.id === 'compareArea'?.parentNode) {
+            // но у нас нет id у слайда, обработаем отдельно
+        }
+    };
+
+    // Теперь инициализация
+    updateSlide(0);
+
+    // ------------------------------------------------------------
+    //  ЛОГИКА СЛАЙДА "СРАВНЕНИЕ"
+    // ------------------------------------------------------------
+    let compareIndex = 0; // текущее предложение для сравнения (0-11)
+    const compareSentence = document.getElementById('compareSentence');
+    const compareImages = document.getElementById('compareImages');
+    const compareFeedback = document.getElementById('compareFeedback');
+
+    // При загрузке слайда сравнения обновляем
+    function updateCompare() {
+        if (!compareSentence) return;
+        // Показываем предложение по индексу compareIndex
+        compareSentence.textContent = sentences[compareIndex];
+        // Обновляем картинки: показываем 4 варианта (саму картинку + три случайные)
+        const correctIdx = compareIndex; // правильная картинка соответствует номеру предложения (индекс 0-11)
+        // Выберем 4 разных индекса, включая правильный
+        let candidates = [correctIdx];
+        while (candidates.length < 4) {
+            const r = Math.floor(Math.random() * sentences.length);
+            if (!candidates.includes(r)) candidates.push(r);
+        }
+        // Перемешаем для случайного порядка
+        for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+        }
+        // Обновляем HTML картинок
+        compareImages.innerHTML = candidates.map(idx => `
+            <div class="cmp-img" data-imgidx="${idx}">
+                <img src="images/${idx+1}.jpg" alt="Вариант" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f4e2d7%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2230%22 y=%2275%22 font-size=%2225%22 fill=%22%239f7b6b%22%3E${idx+1}%3C/text%3E%3C/svg%3E'">
+            </div>
+        `).join('');
+
+        // Добавляем обработчики
+        compareImages.querySelectorAll('.cmp-img').forEach(el => {
+            el.addEventListener('click', function() {
+                const selectedIdx = parseInt(this.dataset.imgidx);
+                const isCorrect = (selectedIdx === correctIdx);
+                // Убираем выделение со всех
+                compareImages.querySelectorAll('.cmp-img').forEach(img => img.classList.remove('selected'));
+                this.classList.add('selected');
+                compareFeedback.textContent = isCorrect ? '✅ Верно! Отлично!' : '❌ Неправильно, попробуй другую картинку';
+                // Не блокируем, чтобы можно было пробовать дальше
+            });
+        });
+
+        // Кнопка для следующего сравнения (будем использовать навигацию? или добавим свою)
+        // Дополнительно: добавим кнопку "следующее предложение" внутри слайда?
+        // Мы можем использовать кнопки "вперед/назад" для переключения между слайдами, а для сравнения добавим кнопку "новое предложение"
+        // Но упростим: при переходе на этот слайд будет одно предложение. Для смены нужно переключиться на другой слайд и вернуться.
+        // Сделаем так, чтобы при каждом показе слайда сравнения генерировалось новое задание (случайное предложение)
+    }
+
+    // Переопределим updateSlide ещё раз, чтобы обновлять сравнение
+    const prevUpdate = updateSlide;
+    updateSlide = function(index) {
+        prevUpdate(index);
+        const slide = slides[index];
+        if (slide && slide.querySelector('.compare-area')) {
+            // Выбираем случайное предложение для сравнения
+            compareIndex = Math.floor(Math.random() * sentences.length);
+            updateCompare();
+        }
+        // Для сортировки проверяем порядок
+        if (slide && slide.querySelector('.sort-container')) {
+            // Сортировка уже создана, но можно добавить проверку
+        }
+    };
+
+    // ------------------------------------------------------------
+    //  ЛОГИКА СЛАЙДА "СОРТИРОВКА"
+    // ------------------------------------------------------------
+    const sortContainer = document.getElementById('sortContainer');
+    if (sortContainer) {
+        let sortItems = sortContainer.querySelectorAll('.sort-item');
+        let draggedItem = null;
+
+        sortContainer.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('sort-item')) {
+                draggedItem = e.target;
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        });
+
+        sortContainer.addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('sort-item')) {
+                e.target.classList.remove('dragging');
+                sortContainer.querySelectorAll('.sort-item').forEach(el => el.classList.remove('drag-over'));
+            }
+        });
+
+        sortContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const target = e.target.closest('.sort-item');
+            if (target && target !== draggedItem) {
+                sortContainer.querySelectorAll('.sort-item').forEach(el => el.classList.remove('drag-over'));
+                target.classList.add('drag-over');
+            }
+        });
+
+        sortContainer.addEventListener('dragleave', (e) => {
+            const target = e.target.closest('.sort-item');
+            if (target) target.classList.remove('drag-over');
+        });
+
+        sortContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const target = e.target.closest('.sort-item');
+            if (target && draggedItem && target !== draggedItem) {
+                // Меняем местами
+                const rect = target.getBoundingClientRect();
+                const after = (e.clientY > rect.top + rect.height/2);
+                if (after) {
+                    target.parentNode.insertBefore(draggedItem, target.nextSibling);
+                } else {
+                    target.parentNode.insertBefore(draggedItem, target);
+                }
+            }
+            sortContainer.querySelectorAll('.sort-item').forEach(el => el.classList.remove('drag-over'));
+        });
+
+        // Кнопка проверки порядка (можно добавить)
+        const checkBtn = document.createElement('button');
+        checkBtn.textContent = 'Проверить порядок';
+        checkBtn.className = 'nav-btn';
+        checkBtn.style.marginTop = '15px';
+        checkBtn.addEventListener('click', () => {
+            const items = sortContainer.querySelectorAll('.sort-item');
+            let correct = true;
+            items.forEach((item, idx) => {
+                const orig = parseInt(item.dataset.original);
+                if (orig !== idx) correct = false;
+            });
+            const check = document.getElementById('sortCheck');
+            check.textContent = correct ? '✅ Отлично! Все по порядку!' : '❌ Не совсем, попробуй переставить.';
+        });
+        sortSlide.querySelector('.sort-container').after(checkBtn);
+    }
+
+    // Обновляем сравнение при первом показе
+    // Добавим обработчик на слайд сравнения (по id нет, но найдём по классу)
+    // Мы уже вызываем updateCompare при переходе на нужный слайд.
+
+    // Начальная инициализация – показываем первый слайд
+    updateSlide(0);
+
+    // Обработка ошибок загрузки картинок (onerror уже вставлены)
+    console.log('Презентация загружена. Убедитесь, что папка images существует и содержит title.jpg и 1.jpg...12.jpg');
+</script>
+</body>
+</html>

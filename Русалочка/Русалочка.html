@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Русалочка — интерактивная презентация</title>
+    <style>
+        /* === RESET & BASE === */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5efe8;
+        }
+
+        #presentation {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #faf3eb;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #faf3eb;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* === NAV ARROWS === */
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            font-size: 48px;
+            width: 60px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.5);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            color: #4a3a2a;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: background 0.2s, opacity 0.2s, transform 0.2s;
+            opacity: 0;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(4px);
+        }
+        .nav-arrow:hover {
+            background: rgba(255, 248, 240, 0.9);
+            opacity: 1 !important;
+        }
+        .nav-arrow:active {
+            transform: translateY(-50%) scale(0.94);
+        }
+        .nav-arrow.left {
+            left: 12px;
+        }
+        .nav-arrow.right {
+            right: 12px;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .nav-arrow {
+                opacity: 0.7;
+            }
+            .nav-arrow:active {
+                opacity: 1;
+            }
+        }
+        #presentation:hover .nav-arrow {
+            opacity: 0.7;
+        }
+        #presentation:hover .nav-arrow:hover {
+            opacity: 1;
+        }
+
+        /* === SLIDE 1: TITLE === */
+        .slide-title .slide-image {
+            width: 100%;
+            height: 85%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e8ddd0;
+            overflow: hidden;
+        }
+        .slide-title .slide-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .slide-title .slide-text {
+            width: 100%;
+            height: 15%;
+            background: rgba(255, 248, 240, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 16px;
+            text-align: center;
+            backdrop-filter: blur(2px);
+        }
+        .slide-title .slide-text .title-main {
+            font-size: clamp(32px, 6vw, 60px);
+            font-weight: 900;
+            color: #1a1a1a;
+            letter-spacing: 1px;
+        }
+        .slide-title .slide-text .title-sub {
+            font-size: clamp(18px, 3vw, 40px);
+            font-weight: 700;
+            color: #3a2a1a;
+            margin-top: 2px;
+        }
+
+        /* === SLIDES 2-13: STORY === */
+        .slide-story .slide-image {
+            width: 100%;
+            height: 85%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e8ddd0;
+            overflow: hidden;
+        }
+        .slide-story .slide-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .slide-story .slide-text {
+            width: 100%;
+            height: 15%;
+            background: rgba(255, 248, 240, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 20px;
+            text-align: center;
+            font-size: clamp(24px, 4vw, 48px);
+            font-weight: 900;
+            color: #1a1a1a;
+            backdrop-filter: blur(2px);
+        }
+
+        /* === SLIDE 14: THUMBNAILS + FULL TEXT === */
+        .slide-gridtext {
+            padding: 8px 12px;
+            gap: 4px;
+        }
+        .slide-gridtext .grid-top {
+            width: 100%;
+            height: 40%;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            background: #faf3eb;
+            padding: 4px;
+            align-content: start;
+        }
+        .slide-gridtext .grid-top .thumb {
+            background: #e8ddd0;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slide-gridtext .grid-top .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            aspect-ratio: 16/9;
+            display: block;
+        }
+        .slide-gridtext .grid-bottom {
+            width: 100%;
+            height: 60%;
+            background: rgba(255, 248, 240, 0.95);
+            display: flex;
+            align-items: center;
+            padding: 10px 5%;
+            overflow-y: auto;
+            backdrop-filter: blur(2px);
+            border-radius: 8px;
+        }
+        .slide-gridtext .grid-bottom .full-text {
+            width: 100%;
+            font-size: clamp(18px, 3vw, 38px);
+            font-weight: 700;
+            color: #1a1a1a;
+            text-align: justify;
+            text-justify: inter-word;
+            line-height: 1.5;
+            padding: 8px 0;
+        }
+
+        /* === SLIDE 15: TITLE "Ответь на вопросы" === */
+        .slide-bigtext {
+            background: #faf3eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .slide-bigtext .big-text {
+            font-size: clamp(48px, 10vw, 100px);
+            font-weight: 900;
+            color: #1a1a1a;
+            letter-spacing: 2px;
+        }
+
+        /* === SLIDES 16-27: QUESTIONS === */
+        .slide-question {
+            padding: 6px 10px;
+            gap: 4px;
+            background: #faf3eb;
+        }
+        .slide-question .q-grid {
+            width: 100%;
+            height: 40%;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            background: #faf3eb;
+            padding: 4px;
+            align-content: start;
+        }
+        .slide-question .q-grid .thumb {
+            background: #e8ddd0;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border 0.3s, box-shadow 0.3s, transform 0.3s;
+            border: 3px solid transparent;
+            position: relative;
+        }
+        .slide-question .q-grid .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            aspect-ratio: 16/9;
+            display: block;
+        }
+        .slide-question .q-grid .thumb.hint-highlight {
+            border-color: #ff8800;
+            box-shadow: 0 0 24px rgba(255, 136, 0, 0.7), 0 0 60px rgba(255, 136, 0, 0.3);
+            animation: pulse-glow 1.2s ease-in-out 3;
+            z-index: 2;
+        }
+        @keyframes pulse-glow {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.08);
+            }
+        }
+
+        .slide-question .q-bottom {
+            width: 100%;
+            height: 60%;
+            background: rgba(255, 248, 240, 0.95);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            backdrop-filter: blur(2px);
+            gap: 6px;
+            overflow-y: auto;
+        }
+        .slide-question .q-bottom .q-text {
+            font-size: clamp(24px, 3.6vw, 44px);
+            font-weight: 800;
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        .slide-question .q-bottom .q-options {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 100%;
+            max-width: 720px;
+        }
+        .slide-question .q-bottom .q-options .opt {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 2px solid #d0c4b8;
+            background: #fffcf8;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+            font-size: clamp(18px, 2.4vw, 30px);
+            font-weight: 600;
+            color: #1a1a1a;
+            user-select: none;
+        }
+        .slide-question .q-bottom .q-options .opt:hover {
+            background: #f0e8e0;
+        }
+        .slide-question .q-bottom .q-options .opt .cb {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #8a7a6a;
+            border-radius: 6px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            transition: all 0.15s;
+            color: transparent;
+        }
+        .slide-question .q-bottom .q-options .opt.correct .cb {
+            border-color: #2a7a2a;
+            background: #2a7a2a;
+            color: #fff;
+        }
+        .slide-question .q-bottom .q-options .opt.correct {
+            border-color: #2a7a2a;
+            background: #e6f5e6;
+        }
+        .slide-question .q-bottom .q-options .opt.wrong .cb {
+            border-color: #b33a3a;
+            background: #b33a3a;
+            color: #fff;
+        }
+        .slide-question .q-bottom .q-options .opt.wrong {
+            border-color: #b33a3a;
+            background: #f5e6e6;
+        }
+        .slide-question .q-bottom .q-options .opt.disabled {
+            cursor: default;
+            opacity: 0.85;
+        }
+        .slide-question .q-bottom .q-options .opt.disabled:hover {
+            background: #fffcf8;
+        }
+        .slide-question .q-bottom .q-options .opt.correct.disabled:hover {
+            background: #e6f5e6;
+        }
+        .slide-question .q-bottom .q-options .opt.wrong.disabled:hover {
+            background: #f5e6e6;
+        }
+
+        .slide-question .q-bottom .q-feedback {
+            font-size: clamp(20px, 2.6vw, 34px);
+            font-weight: 700;
+            min-height: 2.2em;
+            text-align: center;
+            margin-top: 2px;
+        }
+        .slide-question .q-bottom .q-feedback.green {
+            color: #2a7a2a;
+        }
+        .slide-question .q-bottom .q-feedback.red {
+            color: #b33a3a;
+        }
+
+        .slide-question .q-bottom .q-buttons {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 4px;
+        }
+        .slide-question .q-bottom .q-buttons button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 30px;
+            font-size: clamp(16px, 2vw, 26px);
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .slide-question .q-bottom .q-buttons button:active {
+            transform: scale(0.96);
+        }
+        .slide-question .q-bottom .q-buttons .btn-hint {
+            background: #f7d44a;
+            color: #3a2a1a;
+        }
+        .slide-question .q-bottom .q-buttons .btn-hint:hover {
+            background: #f0c830;
+            box-shadow: 0 4px 14px rgba(247, 212, 74, 0.4);
+        }
+        .slide-question .q-bottom .q-buttons .btn-text {
+            background: #d4c8b8;
+            color: #1a1a1a;
+        }
+        .slide-question .q-bottom .q-buttons .btn-text:hover {
+            background: #c8bcaa;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        }
+
+        .hint-popup {
+            background: #fef7e0;
+            border: 2px solid #f7d44a;
+            border-radius: 10px;
+            padding: 8px 20px;
+            font-size: clamp(18px, 2.4vw, 30px);
+            font-weight: 700;
+            color: #3a2a1a;
+            text-align: center;
+            max-width: 90%;
+            margin: 2px auto;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* === OVERLAY for full text (уменьшенный шрифт) === */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            backdrop-filter: blur(4px);
+        }
+        .overlay.open {
+            display: flex;
+        }
+        .overlay .overlay-box {
+            background: #faf3eb;
+            max-width: 820px;
+            width: 100%;
+            max-height: 80vh;
+            border-radius: 20px;
+            padding: 32px 40px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+        .overlay .overlay-box .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #5a4a3a;
+            background: none;
+            border: none;
+            font-weight: 700;
+            transition: transform 0.15s;
+            line-height: 1;
+        }
+        .overlay .overlay-box .close-btn:hover {
+            transform: scale(1.2);
+        }
+        .overlay .overlay-box .overlay-text {
+            font-size: clamp(18px, 2.6vw, 32px);
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.6;
+            text-align: justify;
+            text-justify: inter-word;
+            padding: 8px 0;
+        }
+
+        /* === SLIDE 28: "Пересказ" === */
+        /* reuse .slide-bigtext */
+
+        /* === SLIDE 29: COMPARISON (4x3 with full sentences) === */
+        .slide-compare {
+            padding: 6px 10px;
+            gap: 4px;
+            background: #faf3eb;
+        }
+        .slide-compare .comp-grid {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            padding: 4px;
+            align-content: start;
+        }
+        .slide-compare .comp-grid .comp-item {
+            background: rgba(255, 248, 240, 0.9);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e0d4c8;
+        }
+        .slide-compare .comp-grid .comp-item .comp-img {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #e8ddd0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .slide-compare .comp-grid .comp-item .comp-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .slide-compare .comp-grid .comp-item .comp-label {
+            font-size: clamp(12px, 1.6vw, 22px);
+            font-weight: 700;
+            text-align: center;
+            padding: 4px 6px;
+            background: rgba(255, 248, 240, 0.95);
+            color: #1a1a1a;
+            line-height: 1.3;
+            min-height: 2.4em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* === SLIDE 30: HINTS (4x3 with beginnings) === */
+        .slide-hints .comp-label {
+            font-style: italic !important;
+            color: #1a1a1a !important;
+        }
+
+        /* === SLIDE 31: SORTING (drag & drop) === */
+        .slide-sort {
+            padding: 6px 10px;
+            gap: 2px;
+            background: #faf3eb;
+        }
+        .slide-sort .sort-title {
+            font-size: clamp(22px, 3.6vw, 48px);
+            font-weight: 900;
+            color: #1a1a1a;
+            text-align: center;
+            padding: 2px 0 4px 0;
+            flex-shrink: 0;
+        }
+        .slide-sort .sort-grid {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            padding: 4px;
+            align-content: start;
+        }
+        .slide-sort .sort-grid .sort-item {
+            background: #e8ddd0;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: grab;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid transparent;
+            transition: opacity 0.2s, transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            user-select: none;
+            touch-action: none;
+        }
+        .slide-sort .sort-grid .sort-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            display: block;
+        }
+        .slide-sort .sort-grid .sort-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        .slide-sort .sort-grid .sort-item.drag-over {
+            border-color: #4a7ab3;
+            transform: scale(1.03);
+            box-shadow: 0 0 20px rgba(74, 122, 179, 0.35);
+        }
+        .slide-sort .sort-grid .sort-item.drag-over-active {
+            border-color: #4a7ab3;
+            transform: scale(1.03);
+            box-shadow: 0 0 20px rgba(74, 122, 179, 0.35);
+        }
+        .slide-sort .sort-buttons {
+            flex-shrink: 0;
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            padding: 6px 0 10px 0;
+            flex-wrap: wrap;
+        }
+        .slide-sort .sort-buttons button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 30px;
+            font-size: clamp(18px, 2.2vw, 30px);
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        .slide-sort .sort-buttons button:active {
+            transform: scale(0.96);
+        }
+        .slide-sort .sort-buttons .btn-shuffle {
+            background: #d4c8b8;
+            color: #1a1a1a;
+        }
+        .slide-sort .sort-buttons .btn-shuffle:hover {
+            background: #c8bcaa;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+        .slide-sort .sort-buttons .btn-check {
+            background: #8ab87a;
+            color: #1a3a1a;
+        }
+        .slide-sort .sort-buttons .btn-check:hover {
+            background: #7aaa6a;
+            box-shadow: 0 4px 16px rgba(138, 184, 122, 0.35);
+        }
+        .slide-sort .sort-feedback {
+            flex-shrink: 0;
+            font-size: clamp(20px, 2.6vw, 34px);
+            font-weight: 700;
+            text-align: center;
+            min-height: 2em;
+            padding: 2px 0;
+        }
+        .slide-sort .sort-feedback.green {
+            color: #2a7a2a;
+        }
+        .slide-sort .sort-feedback.red {
+            color: #b33a3a;
+        }
+
+        /* === SLIDE 32: FINAL GRID (images only) === */
+        .slide-finalgrid {
+            padding: 6px 10px;
+            gap: 4px;
+            background: #faf3eb;
+        }
+        .slide-finalgrid .fg-grid {
+            width: 100%;
+            height: 85%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            padding: 4px;
+            align-content: start;
+        }
+        .slide-finalgrid .fg-grid .fg-item {
+            background: #e8ddd0;
+            border-radius: 6px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slide-finalgrid .fg-grid .fg-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .slide-finalgrid .fg-label {
+            width: 100%;
+            height: 15%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(24px, 4vw, 48px);
+            font-weight: 900;
+            color: #1a1a1a;
+            text-align: center;
+            padding: 4px 16px;
+            background: rgba(255, 248, 240, 0.9);
+            backdrop-filter: blur(2px);
+        }
+
+        /* === SLIDE 33: FINAL === */
+        /* reuse .slide-bigtext */
+
+        /* === IMAGE FALLBACK === */
+        .img-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: #d5c8b8;
+            color: #5a4a3a;
+            font-size: clamp(14px, 2vw, 28px);
+            font-weight: 700;
+            text-align: center;
+            padding: 10px;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1024px) {
+            .slide-gridtext .grid-top,
+            .slide-question .q-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            .slide-compare .comp-grid,
+            .slide-sort .sort-grid,
+            .slide-finalgrid .fg-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .slide-hints .comp-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .slide-gridtext .grid-top,
+            .slide-question .q-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .slide-compare .comp-grid,
+            .slide-sort .sort-grid,
+            .slide-finalgrid .fg-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .slide-hints .comp-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .nav-arrow {
+                width: 44px;
+                height: 60px;
+                font-size: 32px;
+            }
+            .nav-arrow.left {
+                left: 4px;
+            }
+            .nav-arrow.right {
+                right: 4px;
+            }
+            .slide-question .q-bottom .q-options .opt {
+                padding: 6px 10px;
+                gap: 8px;
+                font-size: clamp(16px, 2.4vw, 22px);
+            }
+            .slide-question .q-bottom .q-options .opt .cb {
+                width: 24px;
+                height: 24px;
+                font-size: 16px;
+            }
+            .slide-question .q-bottom .q-text {
+                font-size: clamp(20px, 3.2vw, 28px);
+            }
+            .slide-question .q-bottom .q-buttons button {
+                padding: 6px 16px;
+                font-size: clamp(14px, 2vw, 20px);
+            }
+            .slide-sort .sort-buttons button {
+                padding: 6px 16px;
+                font-size: clamp(14px, 2vw, 22px);
+            }
+            .overlay .overlay-box {
+                padding: 20px 16px;
+                max-width: 96%;
+            }
+            .overlay .overlay-box .overlay-text {
+                font-size: clamp(18px, 3vw, 28px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .slide-gridtext .grid-top,
+            .slide-question .q-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .slide-compare .comp-grid,
+            .slide-sort .sort-grid,
+            .slide-finalgrid .fg-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .slide-hints .comp-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .nav-arrow {
+                width: 36px;
+                height: 48px;
+                font-size: 24px;
+            }
+            .slide-question .q-bottom .q-options .opt {
+                padding: 4px 8px;
+                gap: 6px;
+                font-size: clamp(14px, 2.4vw, 18px);
+            }
+            .slide-question .q-bottom .q-options .opt .cb {
+                width: 20px;
+                height: 20px;
+                font-size: 13px;
+            }
+            .slide-title .slide-text .title-main {
+                font-size: clamp(24px, 5vw, 36px);
+            }
+            .slide-title .slide-text .title-sub {
+                font-size: clamp(14px, 2.8vw, 24px);
+            }
+            .slide-story .slide-text {
+                font-size: clamp(18px, 3.6vw, 28px);
+                padding: 2px 10px;
+            }
+            .slide-gridtext .grid-bottom .full-text {
+                font-size: clamp(16px, 3vw, 24px);
+            }
+            .slide-bigtext .big-text {
+                font-size: clamp(32px, 8vw, 56px);
+            }
+            .slide-sort .sort-title {
+                font-size: clamp(18px, 3.2vw, 28px);
+            }
+            .slide-finalgrid .fg-label {
+                font-size: clamp(18px, 3.6vw, 28px);
+            }
+            .overlay .overlay-box {
+                padding: 16px 12px;
+            }
+            .overlay .overlay-box .overlay-text {
+                font-size: clamp(16px, 2.8vw, 22px);
+            }
+        }
+
+        .slide-gridtext .grid-bottom::-webkit-scrollbar {
+            width: 6px;
+        }
+        .slide-gridtext .grid-bottom::-webkit-scrollbar-track {
+            background: #e8ddd0;
+            border-radius: 8px;
+        }
+        .slide-gridtext .grid-bottom::-webkit-scrollbar-thumb {
+            background: #c8bcaa;
+            border-radius: 8px;
+        }
+        .slide-gridtext .grid-bottom::-webkit-scrollbar-thumb:hover {
+            background: #b0a490;
+        }
+        .overlay .overlay-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        .overlay .overlay-box::-webkit-scrollbar-track {
+            background: #e8ddd0;
+            border-radius: 8px;
+        }
+        .overlay .overlay-box::-webkit-scrollbar-thumb {
+            background: #c8bcaa;
+            border-radius: 8px;
+        }
+
+        .slide {
+            height: 100%;
+            width: 100%;
+        }
+        .slide-gridtext,
+        .slide-question,
+        .slide-compare,
+        .slide-sort,
+        .slide-finalgrid {
+            padding: 4px 8px;
+        }
+
+        .img-fallback {
+            font-size: clamp(12px, 1.4vw, 20px);
+        }
+
+        .sort-item.touch-dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+            z-index: 100;
+        }
+        .sort-item.touch-over {
+            border-color: #4a7ab3;
+            transform: scale(1.03);
+            box-shadow: 0 0 20px rgba(74, 122, 179, 0.35);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- PRESENTATION CONTAINER                                        -->
+    <!-- ============================================================ -->
+    <div id="presentation">
+
+        <!-- ==================== SLIDE 1: TITLE ==================== -->
+        <div class="slide slide-title active" data-index="0">
+            <div class="slide-image">
+                <img src="images/title.jpg" alt="Титул" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">
+                <div class="title-main">РУСАЛОЧКА</div>
+                <div class="title-sub">Ганс Кристиан Андерсен</div>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDES 2-13: STORY ==================== -->
+        <!-- Slide 2: sentence 1 -->
+        <div class="slide slide-story" data-index="1">
+            <div class="slide-image">
+                <img src="images/1.jpg" alt="1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">В море жила маленькая русалочка.</div>
+        </div>
+        <!-- Slide 3: sentence 2 -->
+        <div class="slide slide-story" data-index="2">
+            <div class="slide-image">
+                <img src="images/2.jpg" alt="2" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">У неё был красивый голос.</div>
+        </div>
+        <!-- Slide 4: sentence 3 -->
+        <div class="slide slide-story" data-index="3">
+            <div class="slide-image">
+                <img src="images/3.jpg" alt="3" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Русалочка увидела на корабле принца и полюбила его.</div>
+        </div>
+        <!-- Slide 5: sentence 4 -->
+        <div class="slide slide-story" data-index="4">
+            <div class="slide-image">
+                <img src="images/4.jpg" alt="4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Начался сильный шторм и принц упал в море.</div>
+        </div>
+        <!-- Slide 6: sentence 5 -->
+        <div class="slide slide-story" data-index="5">
+            <div class="slide-image">
+                <img src="images/5.jpg" alt="5" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Русалочка спасла принца и вынесла на берег.</div>
+        </div>
+        <!-- Slide 7: sentence 6 -->
+        <div class="slide slide-story" data-index="6">
+            <div class="slide-image">
+                <img src="images/6.jpg" alt="6" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Она захотела стать человеком и пошла к морской ведьме.</div>
+        </div>
+        <!-- Slide 8: sentence 7 -->
+        <div class="slide slide-story" data-index="7">
+            <div class="slide-image">
+                <img src="images/7.jpg" alt="7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Ведьма дала ей ноги и забрала голос.</div>
+        </div>
+        <!-- Slide 9: sentence 8 -->
+        <div class="slide slide-story" data-index="8">
+            <div class="slide-image">
+                <img src="images/8.jpg" alt="8" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Русалочка не могла говорить с принцем.</div>
+        </div>
+        <!-- Slide 10: sentence 9 (ИЗМЕНЕНО) -->
+        <div class="slide slide-story" data-index="9">
+            <div class="slide-image">
+                <img src="images/9.jpg" alt="9" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Принц полюбил другую девушку и женился.</div>
+        </div>
+        <!-- Slide 11: sentence 10 -->
+        <div class="slide slide-story" data-index="10">
+            <div class="slide-image">
+                <img src="images/10.jpg" alt="10" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Чтобы стать русалкой она должна убить принца.</div>
+        </div>
+        <!-- Slide 12: sentence 11 -->
+        <div class="slide slide-story" data-index="11">
+            <div class="slide-image">
+                <img src="images/11.jpg" alt="11" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Русалочка не смогла убить и убежала.</div>
+        </div>
+        <!-- Slide 13: sentence 12 -->
+        <div class="slide slide-story" data-index="12">
+            <div class="slide-image">
+                <img src="images/12.jpg" alt="12" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="img-fallback" style="display:none;">Изображение не найдено</div>
+            </div>
+            <div class="slide-text">Утром она превратилась в морскую пену.</div>
+        </div>
+
+        <!-- ==================== SLIDE 14: THUMBNAILS + FULL TEXT ==================== -->
+        <div class="slide slide-gridtext" data-index="13">
+            <div class="grid-top" id="gridTop14">
+                <!-- 12 thumbnails generated by JS -->
+            </div>
+            <div class="grid-bottom">
+                <div class="full-text" id="fullText14">
+                    <!-- будет заполнено из JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 15: "Ответь на вопросы" ==================== -->
+        <div class="slide slide-bigtext" data-index="14">
+            <div class="big-text">Ответь на вопросы</div>
+        </div>
+
+        <!-- ==================== SLIDES 16-27: QUESTIONS ==================== -->
+        <!-- 12 question slides, generated by JS -->
+
+        <!-- ==================== SLIDE 28: "Пересказ" ==================== -->
+        <div class="slide slide-bigtext" data-index="27">
+            <div class="big-text">Пересказ</div>
+        </div>
+
+        <!-- ==================== SLIDE 29: COMPARISON (4x3 with full sentences) ==================== -->
+        <div class="slide slide-compare" data-index="28">
+            <div class="comp-grid" id="compGrid29">
+                <!-- 12 items generated by JS -->
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 30: HINTS (4x3 with beginnings) ==================== -->
+        <div class="slide slide-compare slide-hints" data-index="29">
+            <div class="comp-grid" id="hintsGrid30">
+                <!-- 12 items generated by JS -->
+            </div>
+        </div>
+
+        <!-- ==================== SLIDE 31: SORTING ==================== -->
+        <div class="slide slide-sort" data-index="30">
+            <div class="sort-title">Расставь картинки по порядку</div>
+            <div class="sort-grid" id="sortGrid31">
+                <!-- 12 sort items generated by JS -->
+            </div>
+            <div class="sort-buttons">
+                <button class="btn-shuffle" id="btnShuffle">🔄 Перемешать</button>
+                <button class="btn-check" id="btnCheck">✅ Проверить порядок</button>
+            </div>
+            <div class="sort-feedback" id="sortFeedback31"></div>
+        </div>
+
+        <!-- ==================== SLIDE 32: FINAL GRID (images only) ==================== -->
+        <div class="slide slide-finalgrid" data-index="31">
+            <div class="fg-grid" id="fgGrid32">
+                <!-- 12 items generated by JS -->
+            </div>
+            <div class="fg-label">Расскажи сказку по картинкам</div>
+        </div>
+
+        <!-- ==================== SLIDE 33: FINAL ==================== -->
+        <div class="slide slide-bigtext" data-index="32">
+            <div class="big-text">Молодец! Хорошая работа! 👍</div>
+        </div>
+
+    </div><!-- end #presentation -->
+
+    <!-- ============================================================ -->
+    <!-- NAV ARROWS                                                    -->
+    <!-- ============================================================ -->
+    <button class="nav-arrow left" id="arrowLeft" aria-label="Назад">‹</button>
+    <button class="nav-arrow right" id="arrowRight" aria-label="Вперёд">›</button>
+
+    <!-- ============================================================ -->
+    <!-- OVERLAY for full text                                         -->
+    <!-- ============================================================ -->
+    <div class="overlay" id="textOverlay">
+        <div class="overlay-box">
+            <button class="close-btn" id="overlayClose">✕</button>
+            <div class="overlay-text" id="overlayText">
+                <!-- будет заполнено из JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                     -->
+    <!-- ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ------------------------------------------------------------
+            // DATA (ОБНОВЛЁННЫЕ ПРЕДЛОЖЕНИЯ И ВОПРОСЫ, АВТОР — ГАНС)
+            // ------------------------------------------------------------
+            const sentences = [
+                'В море жила маленькая русалочка.',
+                'У неё был красивый голос.',
+                'Русалочка увидела на корабле принца и полюбила его.',
+                'Начался сильный шторм и принц упал в море.',
+                'Русалочка спасла принца и вынесла на берег.',
+                'Она захотела стать человеком и пошла к морской ведьме.',
+                'Ведьма дала ей ноги и забрала голос.',
+                'Русалочка не могла говорить с принцем.',
+                'Принц полюбил другую девушку и женился.',  // ИЗМЕНЕНО
+                'Чтобы стать русалкой она должна убить принца.',
+                'Русалочка не смогла убить и убежала.',
+                'Утром она превратилась в морскую пену.'
+            ];
+
+            const storyText = sentences.join(' ');
+
+            const questionData = [{
+                q: 'Кто главный герой этой истории?',
+                opts: ['Принц', 'Морская ведьма', 'Русалочка', 'Король'],
+                correct: 2,
+                hintType: 'image',
+                hintIndex: 0 // 1.jpg
+            }, {
+                q: 'О чём рассказывается в этой истории?',
+                opts: ['О путешествии на корабле', 'О жизни и любви русалочки', 'О том, как работает ведьма',
+                    'О морских животных'
+                ],
+                correct: 1,
+                hintType: 'image',
+                hintIndex: 7 // 8.jpg
+            }, {
+                q: 'Кто написал эту сказку?',
+                opts: ['Александр Пушкин', 'Шарль Перро', 'Ганс Кристиан Андерсен', 'Братья Гримм'],
+                correct: 2,
+                hintType: 'author',
+                hintIndex: -1
+            }, {
+                q: 'Где жила русалочка?',
+                opts: ['В лесу', 'В море', 'В замке', 'В пещере'],
+                correct: 1,
+                hintType: 'image',
+                hintIndex: 0 // 1.jpg
+            }, {
+                q: 'Кого русалочка увидела на корабле?',
+                opts: ['Короля', 'Ведьму', 'Принца', 'Рыбака'],
+                correct: 2,
+                hintType: 'image',
+                hintIndex: 2 // 3.jpg
+            }, {
+                q: 'Что случилось во время шторма?',
+                opts: ['Корабль затонул', 'Принц упал в воду', 'Русалочка уплыла', 'Ведьма появилась'],
+                correct: 1,
+                hintType: 'image',
+                hintIndex: 3 // 4.jpg
+            }, {
+                q: 'Что сделала русалочка, когда принц тонул?',
+                opts: ['Уплыла от него', 'Позвала на помощь', 'Спасла его', 'Испугалась и спряталась'],
+                correct: 2,
+                hintType: 'image',
+                hintIndex: 4 // 5.jpg
+            }, {
+                q: 'Что ведьма дала русалочке?',
+                opts: ['Новый хвост', 'Ноги', 'Богатство', 'Красоту'],
+                correct: 1,
+                hintType: 'image',
+                hintIndex: 6 // 7.jpg
+            }, {
+                q: 'Что ведьма забрала у русалочки?',
+                opts: ['Её красоту', 'Её голос', 'Её хвост', 'Её дом'],
+                correct: 1,
+                hintType: 'image',
+                hintIndex: 6 // 7.jpg
+            }, {
+                q: 'Почему принц не женился на русалочке?',
+                opts: ['Она была злой', 'Она не умела говорить', 'Он полюбил другую', 'Он уехал далеко'], // ИЗМЕНЁН ВАРИАНТ
+                correct: 2,
+                hintType: 'image',
+                hintIndex: 8 // 9.jpg
+            }, {
+                q: 'Что нужно было сделать, чтобы снова стать русалкой?',
+                opts: ['Убить принца', 'Попросить ведьму', 'Уплыть', 'Забыть принца'],
+                correct: 0,
+                hintType: 'image',
+                hintIndex: 9 // 10.jpg
+            }, {
+                q: 'Чем закончилась история русалочки?',
+                opts: ['Она вышла замуж за принца', 'Она вернулась к ведьме', 'Она превратилась в морскую пену',
+                    'Она уплыла в другой океан'
+                ],
+                correct: 2,
+                hintType: 'image',
+                hintIndex: 11 // 12.jpg
+            }];
+
+            // ------------------------------------------------------------
+            // STATE
+            // ------------------------------------------------------------
+            const totalSlides = 33;
+            let currentSlide = 0;
+            let slideElements = [];
+
+            const questionStates = questionData.map(() => ({
+                answered: false,
+                hintShown: false,
+                wrongAttempts: 0
+            }));
+
+            let sortOrder = [];
+            let sortDragState = {
+                dragging: false,
+                dragIndex: -1,
+                targetIndex: -1,
+                touchDrag: false,
+                touchStartX: 0,
+                touchStartY: 0,
+                touchTarget: null,
+                touchClone: null
+            };
+
+            // ------------------------------------------------------------
+            // DOM REFS
+            // ------------------------------------------------------------
+            const presentation = document.getElementById('presentation');
+            const arrowLeft = document.getElementById('arrowLeft');
+            const arrowRight = document.getElementById('arrowRight');
+            const overlay = document.getElementById('textOverlay');
+            const overlayClose = document.getElementById('overlayClose');
+            const overlayText = document.getElementById('overlayText');
+            const fullText14 = document.getElementById('fullText14');
+
+            // ------------------------------------------------------------
+            // HELPERS
+            // ------------------------------------------------------------
+            function getImagePath(index) {
+                return 'images/' + (index + 1) + '.jpg';
+            }
+
+            function getThumbHTML(index) {
+                const src = getImagePath(index);
+                return `<img src="${src}" alt="${index+1}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="img-fallback" style="display:none;">Изображение не найдено</div>`;
+            }
+
+            function showOverlay(text) {
+                overlayText.textContent = text || storyText;
+                overlay.classList.add('open');
+            }
+
+            function hideOverlay() {
+                overlay.classList.remove('open');
+            }
+
+            // ------------------------------------------------------------
+            // SLIDE MANAGEMENT
+            // ------------------------------------------------------------
+            function initSlides() {
+                slideElements = document.querySelectorAll('.slide');
+                slideElements.forEach((el, i) => {
+                    el.classList.toggle('active', i === 0);
+                });
+                buildSlide14();
+                buildQuestionSlides();
+                buildSlide29();
+                buildSlide30();
+                buildSlide31();
+                buildSlide32();
+                // Обновляем текст в слайде 14 и оверлее
+                if (fullText14) fullText14.textContent = storyText;
+                if (overlayText) overlayText.textContent = storyText;
+                // Пересобираем список слайдов
+                slideElements = document.querySelectorAll('.slide');
+                goToSlide(0);
+            }
+
+            function goToSlide(index) {
+                if (index < 0) index = 0;
+                if (index >= totalSlides) index = totalSlides - 1;
+                if (index === currentSlide) return;
+                slideElements.forEach(el => el.classList.remove('active'));
+                const target = slideElements[index];
+                if (target) {
+                    target.classList.add('active');
+                    void target.offsetWidth;
+                }
+                currentSlide = index;
+                updateArrows();
+            }
+
+            function nextSlide() {
+                if (currentSlide < totalSlides - 1) goToSlide(currentSlide + 1);
+            }
+
+            function prevSlide() {
+                if (currentSlide > 0) goToSlide(currentSlide - 1);
+            }
+
+            function updateArrows() {
+                // nothing dynamic
+            }
+
+            // ------------------------------------------------------------
+            // BUILD SLIDE 14: thumbnails + full text
+            // ------------------------------------------------------------
+            function buildSlide14() {
+                const container = document.getElementById('gridTop14');
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'thumb';
+                    div.innerHTML = getThumbHTML(i);
+                    container.appendChild(div);
+                }
+            }
+
+            // ------------------------------------------------------------
+            // BUILD QUESTION SLIDES (16-27)
+            // ------------------------------------------------------------
+            function buildQuestionSlides() {
+                const slide15 = slideElements[14];
+                if (!slide15) return;
+                const parent = slide15.parentNode;
+                let insertAfter = slide15;
+
+                for (let qi = 0; qi < questionData.length; qi++) {
+                    const q = questionData[qi];
+                    const slide = document.createElement('div');
+                    slide.className = 'slide slide-question';
+                    slide.dataset.index = 15 + qi;
+                    slide.dataset.qindex = qi;
+
+                    const grid = document.createElement('div');
+                    grid.className = 'q-grid';
+                    grid.id = 'qGrid_' + qi;
+                    for (let i = 0; i < 12; i++) {
+                        const thumb = document.createElement('div');
+                        thumb.className = 'thumb';
+                        thumb.dataset.thumbIndex = i;
+                        thumb.innerHTML = getThumbHTML(i);
+                        grid.appendChild(thumb);
+                    }
+                    slide.appendChild(grid);
+
+                    const bottom = document.createElement('div');
+                    bottom.className = 'q-bottom';
+
+                    const qText = document.createElement('div');
+                    qText.className = 'q-text';
+                    qText.textContent = q.q;
+                    bottom.appendChild(qText);
+
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'q-options';
+                    for (let oi = 0; oi < q.opts.length; oi++) {
+                        const opt = document.createElement('div');
+                        opt.className = 'opt';
+                        opt.dataset.optIndex = oi;
+                        const cb = document.createElement('span');
+                        cb.className = 'cb';
+                        cb.textContent = '';
+                        const label = document.createElement('span');
+                        label.textContent = q.opts[oi];
+                        opt.appendChild(cb);
+                        opt.appendChild(label);
+                        opt.addEventListener('click', function(e) {
+                            handleOptionClick(qi, oi, this);
+                        });
+                        optionsDiv.appendChild(opt);
+                    }
+                    bottom.appendChild(optionsDiv);
+
+                    const feedback = document.createElement('div');
+                    feedback.className = 'q-feedback';
+                    feedback.id = 'qFeedback_' + qi;
+                    bottom.appendChild(feedback);
+
+                    const buttonsDiv = document.createElement('div');
+                    buttonsDiv.className = 'q-buttons';
+
+                    const hintBtn = document.createElement('button');
+                    hintBtn.className = 'btn-hint';
+                    hintBtn.textContent = '💡 Подсказка';
+                    hintBtn.addEventListener('click', function() {
+                        showHint(qi);
+                    });
+                    buttonsDiv.appendChild(hintBtn);
+
+                    const textBtn = document.createElement('button');
+                    textBtn.className = 'btn-text';
+                    textBtn.textContent = '📖 Показать текст';
+                    textBtn.addEventListener('click', function() {
+                        showOverlay(storyText);
+                    });
+                    buttonsDiv.appendChild(textBtn);
+
+                    bottom.appendChild(buttonsDiv);
+
+                    const hintPopup = document.createElement('div');
+                    hintPopup.className = 'hint-popup';
+                    hintPopup.id = 'qHintPopup_' + qi;
+                    hintPopup.style.display = 'none';
+                    bottom.appendChild(hintPopup);
+
+                    slide.appendChild(bottom);
+
+                    parent.insertBefore(slide, insertAfter.nextSibling);
+                    insertAfter = slide;
+                }
+                slideElements = document.querySelectorAll('.slide');
+            }
+
+            // ------------------------------------------------------------
+            // QUESTION LOGIC
+            // ------------------------------------------------------------
+            function handleOptionClick(qIndex, optIndex, optElement) {
+                const state = questionStates[qIndex];
+                if (state.answered) return;
+
+                const q = questionData[qIndex];
+                const slide = document.querySelector(`.slide-question[data-qindex="${qIndex}"]`);
+                if (!slide) return;
+
+                const options = slide.querySelectorAll('.q-options .opt');
+                const feedback = document.getElementById('qFeedback_' + qIndex);
+
+                options.forEach(o => {
+                    o.classList.remove('wrong', 'correct');
+                    const cb = o.querySelector('.cb');
+                    if (cb) {
+                        cb.textContent = '';
+                        cb.style.color = 'transparent';
+                        cb.style.borderColor = '#8a7a6a';
+                        cb.style.background = '#fff';
+                    }
+                });
+
+                const isCorrect = (optIndex === q.correct);
+                const cb = optElement.querySelector('.cb');
+                if (isCorrect) {
+                    optElement.classList.add('correct');
+                    if (cb) {
+                        cb.textContent = '✓';
+                        cb.style.color = '#fff';
+                        cb.style.borderColor = '#2a7a2a';
+                        cb.style.background = '#2a7a2a';
+                    }
+                    feedback.className = 'q-feedback green';
+                    feedback.textContent = '✅ Правильно!';
+                    state.answered = true;
+                    options.forEach(o => o.classList.add('disabled'));
+                    const popup = document.getElementById('qHintPopup_' + qIndex);
+                    if (popup) popup.style.display = 'none';
+                    clearGridHighlight(qIndex);
+                } else {
+                    optElement.classList.add('wrong');
+                    if (cb) {
+                        cb.textContent = '✕';
+                        cb.style.color = '#fff';
+                        cb.style.borderColor = '#b33a3a';
+                        cb.style.background = '#b33a3a';
+                    }
+                    feedback.className = 'q-feedback red';
+                    feedback.textContent = '❌ Попробуй ещё раз';
+                    state.wrongAttempts++;
+                    options.forEach(o => o.classList.remove('disabled'));
+                }
+            }
+
+            function clearGridHighlight(qIndex) {
+                const slide = document.querySelector(`.slide-question[data-qindex="${qIndex}"]`);
+                if (!slide) return;
+                const thumbs = slide.querySelectorAll('.q-grid .thumb');
+                thumbs.forEach(t => t.classList.remove('hint-highlight'));
+            }
+
+            function showHint(qIndex) {
+                const q = questionData[qIndex];
+                const state = questionStates[qIndex];
+                const slide = document.querySelector(`.slide-question[data-qindex="${qIndex}"]`);
+                if (!slide) return;
+                const popup = document.getElementById('qHintPopup_' + qIndex);
+                if (!popup) return;
+
+                if (q.hintType === 'author') {
+                    popup.textContent = '💡 Подсказка: автора зовут Ганс Кристиан Андерсен';
+                    popup.style.display = 'block';
+                    clearGridHighlight(qIndex);
+                } else if (q.hintType === 'image') {
+                    const idx = q.hintIndex;
+                    if (idx >= 0 && idx < 12) {
+                        clearGridHighlight(qIndex);
+                        const thumbs = slide.querySelectorAll('.q-grid .thumb');
+                        if (thumbs[idx]) {
+                            thumbs[idx].classList.add('hint-highlight');
+                            setTimeout(() => {
+                                thumbs[idx].classList.remove('hint-highlight');
+                            }, 3500);
+                        }
+                        popup.style.display = 'none';
+                    } else {
+                        popup.textContent = '💡 Подсказка: посмотри на картинки выше';
+                        popup.style.display = 'block';
+                    }
+                } else {
+                    popup.textContent = '💡 Подсказка: подумай ещё';
+                    popup.style.display = 'block';
+                }
+                if (popup.style.display !== 'none') {
+                    setTimeout(() => {
+                        popup.style.display = 'none';
+                    }, 4000);
+                }
+                state.hintShown = true;
+            }
+
+            // ------------------------------------------------------------
+            // BUILD SLIDE 29: COMPARISON (4x3 with full sentences)
+            // ------------------------------------------------------------
+            function buildSlide29() {
+                const container = document.getElementById('compGrid29');
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'comp-item';
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'comp-img';
+                    imgDiv.innerHTML = getThumbHTML(i);
+                    item.appendChild(imgDiv);
+                    const label = document.createElement('div');
+                    label.className = 'comp-label';
+                    label.textContent = sentences[i];
+                    item.appendChild(label);
+                    container.appendChild(item);
+                }
+            }
+
+            // ------------------------------------------------------------
+            // BUILD SLIDE 30: HINTS (4x3 with beginnings)
+            // ------------------------------------------------------------
+            function buildSlide30() {
+                const container = document.getElementById('hintsGrid30');
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'comp-item';
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'comp-img';
+                    imgDiv.innerHTML = getThumbHTML(i);
+                    item.appendChild(imgDiv);
+                    const label = document.createElement('div');
+                    label.className = 'comp-label';
+                    const words = sentences[i].replace(/\.$/, '').split(' ');
+                    let beginning = '';
+                    if (words.length === 0) beginning = '...';
+                    else {
+                        const firstWord = words[0].toLowerCase();
+                        const preps = ['на', 'у', 'за', 'в', 'из', 'о', 'об', 'от', 'по', 'под', 'над', 'перед', 'через',
+                            'между', 'среди', 'без', 'для', 'до', 'про', 'к', 'со', 'во', 'из-за', 'из-под'
+                        ];
+                        const pronouns = ['он', 'она', 'они', 'его', 'её', 'их', 'мне', 'тебе', 'ему', 'ей', 'нам', 'вам',
+                            'им', 'меня', 'тебя', 'нас', 'вас'
+                        ];
+                        const isPrepOrPron = preps.includes(firstWord) || pronouns.includes(firstWord);
+                        if (isPrepOrPron && words.length >= 2) {
+                            beginning = words[0] + ' ' + words[1] + '...';
+                        } else {
+                            beginning = words[0] + '...';
+                        }
+                    }
+                    label.textContent = beginning;
+                    item.appendChild(label);
+                    container.appendChild(item);
+                }
+            }
+
+            // ------------------------------------------------------------
+            // BUILD SLIDE 31: SORTING (drag & drop)
+            // ------------------------------------------------------------
+            function buildSlide31() {
+                const container = document.getElementById('sortGrid31');
+                if (!container) return;
+                sortOrder = Array.from({ length: 12 }, (_, i) => i);
+                shuffleArray(sortOrder);
+                renderSortGrid();
+            }
+
+            function renderSortGrid() {
+                const container = document.getElementById('sortGrid31');
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < sortOrder.length; i++) {
+                    const idx = sortOrder[i];
+                    const item = document.createElement('div');
+                    item.className = 'sort-item';
+                    item.dataset.sortIndex = i;
+                    item.dataset.realIndex = idx;
+                    item.draggable = true;
+                    item.innerHTML = getThumbHTML(idx);
+                    item.addEventListener('dragstart', onDragStart);
+                    item.addEventListener('dragend', onDragEnd);
+                    item.addEventListener('dragover', onDragOver);
+                    item.addEventListener('dragenter', onDragEnter);
+                    item.addEventListener('dragleave', onDragLeave);
+                    item.addEventListener('drop', onDrop);
+                    item.addEventListener('touchstart', onTouchStart, { passive: false });
+                    item.addEventListener('touchmove', onTouchMove, { passive: false });
+                    item.addEventListener('touchend', onTouchEnd, { passive: false });
+                    container.appendChild(item);
+                }
+                const fb = document.getElementById('sortFeedback31');
+                if (fb) { fb.textContent = '';
+                    fb.className = 'sort-feedback'; }
+            }
+
+            let dragSrcIndex = -1;
+
+            function onDragStart(e) {
+                const item = e.target.closest('.sort-item');
+                if (!item) return;
+                dragSrcIndex = parseInt(item.dataset.sortIndex);
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', dragSrcIndex);
+                const fb = document.getElementById('sortFeedback31');
+                if (fb) { fb.textContent = '';
+                    fb.className = 'sort-feedback'; }
+            }
+
+            function onDragEnd(e) {
+                const item = e.target.closest('.sort-item');
+                if (item) item.classList.remove('dragging');
+                document.querySelectorAll('.sort-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+                document.querySelectorAll('.sort-item.drag-over-active').forEach(el => el.classList.remove(
+                'drag-over-active'));
+                dragSrcIndex = -1;
+            }
+
+            function onDragOver(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                const target = e.target.closest('.sort-item');
+                if (!target) return;
+                const targetIndex = parseInt(target.dataset.sortIndex);
+                if (targetIndex === dragSrcIndex) return;
+                target.classList.add('drag-over-active');
+                document.querySelectorAll('.sort-item.drag-over-active').forEach(el => {
+                    if (el !== target) el.classList.remove('drag-over-active');
+                });
+            }
+
+            function onDragEnter(e) {
+                e.preventDefault();
+                const target = e.target.closest('.sort-item');
+                if (target) {
+                    const idx = parseInt(target.dataset.sortIndex);
+                    if (idx !== dragSrcIndex) {
+                        target.classList.add('drag-over');
+                    }
+                }
+            }
+
+            function onDragLeave(e) {
+                const target = e.target.closest('.sort-item');
+                if (target) {
+                    target.classList.remove('drag-over');
+                    target.classList.remove('drag-over-active');
+                }
+            }
+
+            function onDrop(e) {
+                e.preventDefault();
+                const target = e.target.closest('.sort-item');
+                if (!target) return;
+                const targetIndex = parseInt(target.dataset.sortIndex);
+                if (dragSrcIndex === -1 || targetIndex === dragSrcIndex) {
+                    document.querySelectorAll('.sort-item.drag-over, .sort-item.drag-over-active').forEach(el => el
+                        .classList.remove('drag-over', 'drag-over-active'));
+                    return;
+                }
+                const srcIdx = dragSrcIndex;
+                const tgtIdx = targetIndex;
+                const temp = sortOrder[srcIdx];
+                sortOrder[srcIdx] = sortOrder[tgtIdx];
+                sortOrder[tgtIdx] = temp;
+                renderSortGrid();
+                dragSrcIndex = -1;
+                document.querySelectorAll('.sort-item.drag-over, .sort-item.drag-over-active').forEach(el => el
+                    .classList.remove('drag-over', 'drag-over-active'));
+                const fb = document.getElementById('sortFeedback31');
+                if (fb) { fb.textContent = '';
+                    fb.className = 'sort-feedback'; }
+            }
+
+            let touchDragData = {
+                active: false,
+                srcIndex: -1,
+                clone: null,
+                offsetX: 0,
+                offsetY: 0,
+                startX: 0,
+                startY: 0,
+                itemRect: null,
+                targetIndex: -1
+            };
+
+            function onTouchStart(e) {
+                const item = e.target.closest('.sort-item');
+                if (!item) return;
+                const touch = e.touches[0];
+                touchDragData.startX = touch.clientX;
+                touchDragData.startY = touch.clientY;
+                touchDragData.srcIndex = parseInt(item.dataset.sortIndex);
+                touchDragData.active = true;
+                touchDragData.itemRect = item.getBoundingClientRect();
+                touchDragData.offsetX = touch.clientX - touchDragData.itemRect.left;
+                touchDragData.offsetY = touch.clientY - touchDragData.itemRect.top;
+
+                const clone = item.cloneNode(true);
+                clone.style.position = 'fixed';
+                clone.style.width = touchDragData.itemRect.width + 'px';
+                clone.style.height = touchDragData.itemRect.height + 'px';
+                clone.style.left = (touch.clientX - touchDragData.offsetX) + 'px';
+                clone.style.top = (touch.clientY - touchDragData.offsetY) + 'px';
+                clone.style.pointerEvents = 'none';
+                clone.style.zIndex = '9999';
+                clone.style.opacity = '0.85';
+                clone.style.transform = 'scale(0.95)';
+                clone.style.border = '3px solid #4a7ab3';
+                clone.style.borderRadius = '6px';
+                clone.style.boxShadow = '0 8px 30px rgba(0,0,0,0.25)';
+                document.body.appendChild(clone);
+                touchDragData.clone = clone;
+
+                item.classList.add('touch-dragging');
+                e.preventDefault();
+            }
+
+            function onTouchMove(e) {
+                if (!touchDragData.active) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                if (touchDragData.clone) {
+                    touchDragData.clone.style.left = (touch.clientX - touchDragData.offsetX) + 'px';
+                    touchDragData.clone.style.top = (touch.clientY - touchDragData.offsetY) + 'px';
+                }
+
+                const items = document.querySelectorAll('.sort-item');
+                let targetItem = null;
+                let targetIndex = -1;
+                items.forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                        touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                        targetItem = el;
+                        targetIndex = parseInt(el.dataset.sortIndex);
+                    }
+                });
+
+                items.forEach(el => el.classList.remove('touch-over'));
+                if (targetItem && targetIndex !== touchDragData.srcIndex) {
+                    targetItem.classList.add('touch-over');
+                    touchDragData.targetIndex = targetIndex;
+                } else {
+                    touchDragData.targetIndex = -1;
+                }
+            }
+
+            function onTouchEnd(e) {
+                if (!touchDragData.active) return;
+                e.preventDefault();
+
+                if (touchDragData.clone) {
+                    document.body.removeChild(touchDragData.clone);
+                    touchDragData.clone = null;
+                }
+
+                document.querySelectorAll('.sort-item.touch-dragging, .sort-item.touch-over').forEach(el => {
+                    el.classList.remove('touch-dragging', 'touch-over');
+                });
+
+                const srcIdx = touchDragData.srcIndex;
+                const tgtIdx = touchDragData.targetIndex;
+                if (srcIdx !== -1 && tgtIdx !== -1 && srcIdx !== tgtIdx) {
+                    const temp = sortOrder[srcIdx];
+                    sortOrder[srcIdx] = sortOrder[tgtIdx];
+                    sortOrder[tgtIdx] = temp;
+                    renderSortGrid();
+                    const fb = document.getElementById('sortFeedback31');
+                    if (fb) { fb.textContent = '';
+                        fb.className = 'sort-feedback'; }
+                }
+
+                touchDragData.active = false;
+                touchDragData.srcIndex = -1;
+                touchDragData.targetIndex = -1;
+            }
+
+            document.getElementById('btnShuffle').addEventListener('click', function() {
+                shuffleArray(sortOrder);
+                renderSortGrid();
+                const fb = document.getElementById('sortFeedback31');
+                if (fb) { fb.textContent = '';
+                    fb.className = 'sort-feedback'; }
+            });
+
+            document.getElementById('btnCheck').addEventListener('click', function() {
+                const fb = document.getElementById('sortFeedback31');
+                if (!fb) return;
+                let correct = true;
+                for (let i = 0; i < 12; i++) {
+                    if (sortOrder[i] !== i) { correct = false; break; }
+                }
+                if (correct) {
+                    fb.className = 'sort-feedback green';
+                    fb.textContent = '✅ Правильно! Теперь перескажи сказку по порядку';
+                } else {
+                    fb.className = 'sort-feedback red';
+                    fb.textContent = '❌ Попробуй ещё раз';
+                }
+            });
+
+            function shuffleArray(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            // ------------------------------------------------------------
+            // BUILD SLIDE 32: FINAL GRID (images only, correct order)
+            // ------------------------------------------------------------
+            function buildSlide32() {
+                const container = document.getElementById('fgGrid32');
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'fg-item';
+                    item.innerHTML = getThumbHTML(i);
+                    container.appendChild(item);
+                }
+            }
+
+            // ------------------------------------------------------------
+            // KEYBOARD NAVIGATION
+            // ------------------------------------------------------------
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevSlide();
+                } else if (e.key === 'Escape') {
+                    if (overlay.classList.contains('open')) hideOverlay();
+                }
+            });
+
+            arrowLeft.addEventListener('click', prevSlide);
+            arrowRight.addEventListener('click', nextSlide);
+
+            overlayClose.addEventListener('click', hideOverlay);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) hideOverlay();
+            });
+
+            // ------------------------------------------------------------
+            // TOUCH SWIPE SUPPORT
+            // ------------------------------------------------------------
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let isSwiping = false;
+
+            presentation.addEventListener('touchstart', function(e) {
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                isSwiping = false;
+            }, { passive: true });
+
+            presentation.addEventListener('touchmove', function(e) {
+                if (touchStartX === 0) return;
+                const touch = e.touches[0];
+                const dx = touch.clientX - touchStartX;
+                const dy = touch.clientY - touchStartY;
+                if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 0.6) {
+                    isSwiping = true;
+                    if (dx > 0) {
+                        prevSlide();
+                    } else {
+                        nextSlide();
+                    }
+                    touchStartX = 0;
+                    touchStartY = 0;
+                }
+            }, { passive: true });
+
+            presentation.addEventListener('touchend', function(e) {
+                touchStartX = 0;
+                touchStartY = 0;
+            }, { passive: true });
+
+            // ------------------------------------------------------------
+            // INIT
+            // ------------------------------------------------------------
+            initSlides();
+            console.log('Презентация "Русалочка" обновлена. Всего слайдов: ' + totalSlides);
+
+            window._presentation = {
+                goToSlide: goToSlide,
+                nextSlide: nextSlide,
+                prevSlide: prevSlide,
+                currentSlide: () => currentSlide
+            };
+
+        })();
+    </script>
+
+</body>
+</html>
