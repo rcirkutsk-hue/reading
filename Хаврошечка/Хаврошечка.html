@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крошечка-Хаврошечка — интерактивный слайдер</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            background: #f0efe7;
+            font-family: 'Arial', 'Segoe UI', sans-serif;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100dvh;
+            background: #fffaf5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #f7f2ec;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #fcf8f2;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        .slide-image {
+            width: 100%;
+            height: 85%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f7f2ec;
+        }
+
+        .slide-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .slide-text {
+            height: 15%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 248, 240, 0.95);
+            border-top: 2px solid #e6d9cc;
+            padding: 0 20px;
+            text-align: center;
+            font-size: clamp(24px, 4.5vw, 48px);
+            font-weight: bold;
+            color: #1f1a15;
+            line-height: 1.4;
+        }
+
+        .slide-text > div {
+            width: 100%;
+            text-align: center;
+        }
+
+        .slide-text .author {
+            font-size: 0.6em;
+            font-weight: normal;
+            display: block;
+            margin-top: 0.2em;
+        }
+
+        .slide-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fcf8f2;
+            font-size: clamp(40px, 8vw, 80px);
+            font-weight: bold;
+            color: #1f1a15;
+            text-align: center;
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .slide-fulltext {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fcf8f2;
+        }
+
+        .slide-mini-grid {
+            width: 100%;
+            height: 40%;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            padding: 8px 10px;
+            background: #f7f2ec;
+            align-content: start;
+        }
+
+        .slide-mini-grid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .hint-highlight {
+            border: 6px solid #ff8800 !important;
+            box-shadow: 0 0 40px rgba(255, 136, 0, 0.9) !important;
+            animation: hintPulse 0.6s ease-in-out 4;
+        }
+
+        @keyframes hintPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .slide-story-text {
+            flex: 1;
+            padding: 15px 25px;
+            overflow-y: auto;
+            background: rgba(255, 248, 240, 0.95);
+            font-size: clamp(20px, 3vw, 36px);
+            line-height: 1.7;
+            color: #1f1a15;
+            text-align: justify;
+            border-top: 2px solid #e6d9cc;
+        }
+
+        .slide-story-text p {
+            margin: 0;
+        }
+
+        .slide-question {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fcf8f2;
+        }
+
+        .slide-question .slide-mini-grid {
+            height: 35%;
+        }
+
+        .question-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(255, 248, 240, 0.95);
+            border-top: 2px solid #e6d9cc;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .question-text {
+            font-size: clamp(22px, 3.5vw, 40px);
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            align-items: stretch;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            font-size: clamp(18px, 2.5vw, 28px);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background 0.2s, border-color 0.2s;
+            border: 2px solid transparent;
+            text-align: left;
+        }
+
+        .option-item:hover {
+            background: #e8e0d5;
+        }
+
+        .option-item input[type="radio"] {
+            display: none;
+        }
+
+        .custom-radio {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #b3a396;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: 0.2s;
+            background: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .option-item .option-text {
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .option-item.correct-answer {
+            border-color: #2a7a2a;
+            background: #e0f0e0;
+        }
+        .option-item.correct-answer .custom-radio {
+            border-color: #2a7a2a;
+            background: #2a7a2a;
+        }
+        .option-item.correct-answer .custom-radio::after {
+            content: "✓";
+        }
+
+        .option-item.wrong-answer {
+            border-color: #b33a3a;
+            background: #f0e0e0;
+        }
+        .option-item.wrong-answer .custom-radio {
+            border-color: #b33a3a;
+            background: #b33a3a;
+        }
+        .option-item.wrong-answer .custom-radio::after {
+            content: "✕";
+        }
+
+        .result-message {
+            font-size: clamp(20px, 3vw, 34px);
+            font-weight: bold;
+            min-height: 2em;
+            text-align: center;
+        }
+
+        .result-message.success {
+            color: #2a7a2a;
+        }
+
+        .result-message.error {
+            color: #b33a3a;
+        }
+
+        .result-message.hint-message {
+            color: #8a6d00;
+            background: #fff3cd;
+            border-radius: 10px;
+            padding: 8px 16px;
+        }
+
+        .question-controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 5px;
+        }
+
+        .question-controls button {
+            padding: 8px 24px;
+            font-size: clamp(18px, 2.5vw, 28px);
+            font-weight: bold;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            background: #d9cdc0;
+            color: #3d3229;
+            box-shadow: 0 4px 0 #b3a396;
+            transition: 0.1s;
+        }
+
+        .question-controls button:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .question-controls .hint-btn {
+            background: #f7d44a;
+            box-shadow: 0 4px 0 #c49b2b;
+        }
+
+        .question-controls .text-btn {
+            background: #8bb38a;
+            box-shadow: 0 4px 0 #5f8a5e;
+            color: #fff;
+        }
+
+        .text-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 20;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .text-overlay.active {
+            display: flex;
+        }
+
+        .text-overlay-content {
+            background: #fffaf5;
+            padding: 30px 40px;
+            border-radius: 30px;
+            max-width: 800px;
+            max-height: 80%;
+            overflow-y: auto;
+            font-size: clamp(18px, 2.5vw, 30px);
+            line-height: 1.6;
+            color: #1f1a15;
+            text-align: justify;
+            position: relative;
+        }
+
+        .text-overlay-content .close-btn {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: #d9cdc0;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .text-overlay-content .sentence {
+            padding: 4px 0;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .text-overlay-content .sentence.highlight {
+            background: #ffeb3b;
+            font-weight: bold;
+            padding: 4px 8px;
+        }
+
+        .slide-comparison, .slide-hint {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fcf8f2;
+        }
+
+        .comparison-grid {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 1fr;
+            gap: 6px;
+            padding: 10px;
+            background: #f7f2ec;
+            align-content: start;
+        }
+
+        .comparison-item {
+            display: flex;
+            flex-direction: column;
+            background: #fffaf5;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .comparison-item img {
+            width: 100%;
+            height: 70%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .comparison-item .caption {
+            height: 30%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 6px;
+            font-size: clamp(14px, 2vw, 22px);
+            font-weight: bold;
+            color: #1f1a15;
+            text-align: center;
+            line-height: 1.3;
+            background: rgba(255, 248, 240, 0.9);
+            border-top: 1px solid #e6d9cc;
+        }
+
+        .comparison-item .caption.hint-caption {
+            font-weight: normal;
+            color: #4d6b8a;
+            font-style: italic;
+        }
+
+        .slide-grid {
+            width: 100%;
+            height: 85%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 1fr;
+            gap: 6px;
+            padding: 10px;
+            background: #f7f2ec;
+            align-content: start;
+        }
+
+        .slide-grid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .slide-grid img:hover {
+            transform: scale(1.02);
+        }
+
+        .slide-sortable {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #fcf8f2;
+        }
+
+        .sortable-header {
+            height: 10%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 248, 240, 0.95);
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: bold;
+            color: #1f1a15;
+            border-bottom: 2px solid #e6d9cc;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .sortable-grid {
+            width: 100%;
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: 1fr;
+            gap: 6px;
+            padding: 10px;
+            background: #f7f2ec;
+            align-content: start;
+        }
+
+        .sortable-item {
+            background: #fffaf5;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .sortable-item:active {
+            cursor: grabbing;
+        }
+
+        .sortable-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .sortable-item.drag-over {
+            box-shadow: 0 0 0 3px #4d6b8a;
+            transform: scale(1.02);
+        }
+
+        .sortable-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        .sortable-controls {
+            height: 15%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: rgba(255, 248, 240, 0.95);
+            border-top: 2px solid #e6d9cc;
+            padding: 0 20px;
+            flex-wrap: wrap;
+        }
+
+        .sortable-controls button {
+            padding: 10px 30px;
+            font-size: clamp(18px, 2.5vw, 28px);
+            font-weight: bold;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            background: #d9cdc0;
+            color: #3d3229;
+            box-shadow: 0 4px 0 #b3a396;
+            transition: 0.1s;
+        }
+
+        .sortable-controls button:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .sortable-controls .check-btn {
+            background: #8bb38a;
+            box-shadow: 0 4px 0 #5f8a5e;
+            color: #fff;
+        }
+
+        .sortable-controls .shuffle-btn {
+            background: #d9cdc0;
+        }
+
+        .sortable-controls .message {
+            font-size: clamp(20px, 3vw, 36px);
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .message.success {
+            color: #2a7a2a;
+        }
+
+        .message.error {
+            color: #b33a3a;
+        }
+
+        @media (max-width: 700px) {
+            .sortable-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px;
+                padding: 6px;
+            }
+            .sortable-controls {
+                height: 20%;
+                gap: 10px;
+            }
+            .sortable-controls button {
+                padding: 8px 16px;
+                font-size: clamp(16px, 4vw, 22px);
+            }
+            .sortable-header {
+                font-size: clamp(22px, 5vw, 32px);
+                height: 12%;
+            }
+            .option-item {
+                font-size: clamp(16px, 3.5vw, 22px);
+                padding: 6px 10px;
+            }
+            .custom-radio {
+                width: 24px;
+                height: 24px;
+                font-size: 18px;
+            }
+            .question-area {
+                padding: 6px 10px;
+            }
+            .slide-question .slide-mini-grid {
+                height: 30%;
+            }
+            .text-overlay-content {
+                padding: 20px;
+                margin: 10px;
+            }
+            .question-text {
+                font-size: clamp(18px, 4vw, 28px);
+            }
+            .result-message {
+                font-size: clamp(16px, 3.5vw, 24px);
+            }
+            .question-controls button {
+                padding: 6px 16px;
+                font-size: clamp(16px, 4vw, 22px);
+            }
+            .slide-placeholder {
+                font-size: clamp(30px, 8vw, 50px);
+            }
+        }
+
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 40px;
+            color: #3d3229;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, opacity 0.2s;
+            opacity: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        .slider-wrapper:hover .slider-arrow {
+            opacity: 1;
+        }
+
+        .slider-arrow:hover {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .slider-arrow.prev {
+            left: 20px;
+        }
+
+        .slider-arrow.next {
+            right: 20px;
+        }
+
+        @media (pointer: coarse) {
+            .slider-arrow {
+                opacity: 0.8;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .slider-arrow {
+                width: 44px;
+                height: 44px;
+                font-size: 28px;
+                opacity: 0.8;
+            }
+            .slider-arrow.prev {
+                left: 10px;
+            }
+            .slider-arrow.next {
+                right: 10px;
+            }
+            .slide-text {
+                font-size: clamp(18px, 5vw, 32px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation-container">
+    <div class="slider-wrapper" id="sliderWrapper">
+        <button class="slider-arrow prev" id="prevBtn" aria-label="Предыдущий">‹</button>
+        <button class="slider-arrow next" id="nextBtn" aria-label="Следующий">›</button>
+    </div>
+</div>
+
+<script>
+    // ===================================================
+    //  ПОСЛЕДНИЙ СОГЛАСОВАННЫЙ ТЕКСТ И ВОПРОСЫ
+    // ===================================================
+    const sentences = [
+        "Жила девочка Хаврошечка, она была сиротой.",
+        "Злая тётка взяла девочку к себе и заставляла много работать.",
+        "У Хаврошечки была любимая корова Бурёнка.",
+        "Корова помогала Хаврошечке делать тяжёлую работу.",
+        "У тётки было три дочери, они следили за Хаврошечкой.",
+        "Тётка узнала про помощь коровы и приказала её зарезать.",
+        "Хаврошечка закопала косточки коровы в саду.",
+        "На месте косточек выросла яблоня с чудесными яблоками.",
+        "Мимо проезжал барин и захотел попробовать яблоко.",
+        "Дочери тётки никак не могли достать яблоки.",
+        "Тогда Хаврошечка сорвала яблоко и угостила барина.",
+        "Барин полюбил Хаврошечку за её доброту и женился на ней."
+    ];
+
+    const fullStoryText = sentences.join(' ');
+
+    const commonGridImages = [
+        'images/1.jpg', 'images/2.jpg', 'images/3.jpg', 'images/4.jpg',
+        'images/5.jpg', 'images/6.jpg', 'images/7.jpg', 'images/8.jpg',
+        'images/9.jpg', 'images/10.jpg', 'images/11.jpg', 'images/12.jpg'
+    ];
+
+    // ---------- Вопросы (12 шт) с правильными индексами ----------
+    const questionData = [
+        {
+            q: 'О ком эта сказка?',
+            opts: ['О девочке Хаврошечке', 'О злой тётке', 'О корове Бурёнке', 'О богатом барине'],
+            correct: 0,
+            hintImg: 0,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Что означает слово «сирота» в этой сказке?',
+            opts: ['Девочка, которая много работает', 'Девочка, которая живёт с коровой', 'Девочка, у которой нет родителей', 'Девочка, которая любит яблоки'],
+            correct: 2,
+            hintImg: 0,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Кто такая тётка в этой сказке?',
+            opts: ['Добрая бабушка', 'Мать Хаврошечки', 'Соседка, которая помогала девочке', 'Злая женщина, которая взяла Хаврошечку к себе'],
+            correct: 3,
+            hintImg: 1,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Что делала корова для Хаврошечки?',
+            opts: ['Давала молоко каждый день', 'Помогала делать тяжёлую работу', 'Играла с ней в саду', 'Гуляла с ней по полю'],
+            correct: 1,
+            hintImg: 3,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Зачем тётка приказала зарезать корову?',
+            opts: ['Потому что она узнала, что корова помогает Хаврошечке', 'Потому что она хотела съесть коровье мясо', 'Потому что корова была старой и больной', 'Потому что корова бодалась и была опасной'],
+            correct: 0,
+            hintImg: 5,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Что сделала Хаврошечка с косточками коровы?',
+            opts: ['Выбросила их в реку', 'Сварила из них суп', 'Отдала их тётке', 'Закопала их в саду'],
+            correct: 3,
+            hintImg: 6,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Что выросло на месте закопанных косточек?',
+            opts: ['Красивый куст с розами', 'Высокая трава', 'Яблоня с чудесными яблоками', 'Большой подсолнух'],
+            correct: 2,
+            hintImg: 7,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Кто проезжал мимо сада, где росла яблоня?',
+            opts: ['Царь', 'Барин', 'Тётка с дочерьми', 'Старый дедушка'],
+            correct: 1,
+            hintImg: 8,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Почему дочери тётки не могли достать яблоки с яблони?',
+            opts: ['Яблоня не давала им яблоки', 'Они были слишком маленького роста', 'Яблоня была очень высокой', 'У них не было лестницы'],
+            correct: 0,
+            hintImg: 9,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Как Хаврошечка угостила барина яблоком?',
+            opts: ['Она дала ему яблоко, которое лежало на земле', 'Она принесла барину целую корзину яблок', 'Она сорвала яблоко и угостила его', 'Она позвала барина в дом и угостила пирогом'],
+            correct: 2,
+            hintImg: 10,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Почему барин женился на Хаврошечке?',
+            opts: ['Потому что она была очень красивая', 'Потому что она была богатой наследницей', 'Потому что она умела хорошо готовить', 'Потому что он полюбил её за доброту'],
+            correct: 3,
+            hintImg: 11,
+            isAuthor: false,
+            textHint: null
+        },
+        {
+            q: 'Чему учит эта сказка?',
+            opts: ['Надо слушаться старших и не перечить', 'Доброта и трудолюбие помогают обрести счастье', 'Все коровы должны жить в саду', 'Яблони вырастают только из косточек'],
+            correct: 1,
+            hintImg: null,
+            isAuthor: false,
+            textHint: 'Подумай, что получила Хаврошечка за свою доброту и помощь корове, а что осталось у злой тётки и её дочерей.'
+        }
+    ];
+
+    // ===================================================
+    //  ПОСТРОЕНИЕ СЛАЙДОВ
+    // ===================================================
+    const slidesData = [
+        // 0 – Титул
+        {
+            text: 'Крошечка-Хаврошечка<br><span class="author">Русская народная сказка</span>',
+            imgSrc: 'images/title.jpg'
+        },
+        // 1–12 – Сюжетные
+        ...sentences.map(s => ({ text: s, imgSrc: `images/${sentences.indexOf(s)+1}.jpg` })),
+        // 13 – Миниатюры + полный текст
+        {
+            isFullText: true,
+            storyText: fullStoryText,
+            gridImages: commonGridImages
+        },
+        // 14 – Заставка "Ответь на вопросы"
+        {
+            isPlaceholder: true,
+            placeholderText: 'Ответь на вопросы'
+        },
+        // 15–26 – Вопросы
+        ...questionData.map((qd, idx) => ({
+            isQuestion: true,
+            questionText: qd.q,
+            options: qd.opts,
+            correctIndex: qd.correct,
+            hintImageIndex: qd.hintImg,
+            gridImages: commonGridImages,
+            storyText: fullStoryText,
+            isAuthorQuestion: qd.isAuthor || false,
+            textHint: qd.textHint || null
+        })),
+        // 27 – Заставка "Пересказ"
+        {
+            isPlaceholder: true,
+            placeholderText: 'Пересказ'
+        },
+        // 28 – Сравнение
+        {
+            isComparison: true,
+            comparisonItems: sentences.map((s, i) => ({
+                img: `images/${i+1}.jpg`,
+                caption: s
+            }))
+        },
+        // 29 – Подсказки-начала
+        {
+            isHint: true,
+            hintItems: sentences.map((s, i) => {
+                const words = s.split(' ');
+                const first = words[0];
+                const preps = ['на','у','за','под','над','перед','между','из','от','к','по','о','об','для','без','через','в','с','и','а','но','да','или','либо','то','что','как','так','ведь','вот','вон','ещё','уже','только','почти','около','возле','мимо','вдоль','вокруг','сквозь','после','до','ради','кроме','вместо','насчёт','ввиду','вслед','навстречу','наперекор'];
+                const pronouns = ['он','она','оно','они','мы','вы','ты','я','его','её','их','нас','вас','меня','тебя','себя','мой','твой','его','её','наш','ваш','их','этот','эта','это','эти','тот','та','те','все','весь','вся','всё','сам','сама','само','сами'];
+                let hint;
+                if (preps.includes(first.toLowerCase()) || pronouns.includes(first.toLowerCase())) {
+                    hint = words.slice(0,2).join(' ') + '...';
+                } else {
+                    hint = first + '...';
+                }
+                return { img: `images/${i+1}.jpg`, hint: hint };
+            })
+        },
+        // 30 – Сортировка
+        {
+            isSortable: true,
+            sortableImages: commonGridImages,
+            sortableHeader: 'Расставь картинки по порядку'
+        },
+        // 31 – Финальная сетка
+        {
+            isGrid: true,
+            text: 'Расскажи сказку по картинкам',
+            gridImages: commonGridImages
+        },
+        // 32 – Финальная заставка
+        {
+            isPlaceholder: true,
+            placeholderText: 'Молодец! Хорошая работа! 👍'
+        }
+    ];
+
+    // ===================================================
+    //  ИНИЦИАЛИЗАЦИЯ
+    // ===================================================
+    const wrapper = document.getElementById('sliderWrapper');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let currentIndex = 0;
+    const totalSlides = slidesData.length;
+
+    function shuffleArray(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // Функция для открытия оверлея с выделенным предложением
+    function openTextOverlayWithHighlight(overlay, textContainer, sentenceIndex) {
+        // sentenceIndex от 0 до 11
+        const sentencesArray = sentences; // массив из 12 предложений
+        textContainer.innerHTML = '';
+        sentencesArray.forEach((s, idx) => {
+            const p = document.createElement('p');
+            p.className = 'sentence';
+            if (idx === sentenceIndex) {
+                p.classList.add('highlight');
+            }
+            p.textContent = s;
+            textContainer.appendChild(p);
+        });
+        // Прокручиваем к выделенному
+        const highlighted = textContainer.querySelector('.highlight');
+        if (highlighted) {
+            highlighted.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+        overlay.classList.add('active');
+    }
+
+    function buildSlides() {
+        slidesData.forEach((data, idx) => {
+            const slideDiv = document.createElement('div');
+            slideDiv.className = 'slide';
+            if (idx === 0) slideDiv.classList.add('active');
+            slideDiv.dataset.index = idx;
+
+            if (data.isPlaceholder) {
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'slide-placeholder';
+                placeholderDiv.textContent = data.placeholderText;
+                slideDiv.appendChild(placeholderDiv);
+            }
+            else if (data.isFullText) {
+                const fullTextDiv = document.createElement('div');
+                fullTextDiv.className = 'slide-fulltext';
+
+                const miniGrid = document.createElement('div');
+                miniGrid.className = 'slide-mini-grid';
+                data.gridImages.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = 'кадр';
+                    img.onerror = function() {
+                        this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width%3D"200" height%3D"150" viewBox%3D"0 0 200 150"%3E%3Crect fill%3D"%23f0e8de" width%3D"200" height%3D"150"%2F%3E%3Ctext x%3D"100" y%3D"75" font-family%3D"Arial" font-size%3D"16" fill%3D"%23998877" text-anchor%3D"middle"%3Eнет фото%3C%2Ftext%3E%3C%2Fsvg%3E';
+                    };
+                    miniGrid.appendChild(img);
+                });
+                fullTextDiv.appendChild(miniGrid);
+
+                const storyTextDiv = document.createElement('div');
+                storyTextDiv.className = 'slide-story-text';
+                const p = document.createElement('p');
+                p.textContent = data.storyText;
+                storyTextDiv.appendChild(p);
+                fullTextDiv.appendChild(storyTextDiv);
+
+                slideDiv.appendChild(fullTextDiv);
+            }
+            else if (data.isQuestion) {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'slide-question';
+
+                // Создаём оверлей для этого слайда
+                const overlay = document.createElement('div');
+                overlay.className = 'text-overlay';
+                const overlayContent = document.createElement('div');
+                overlayContent.className = 'text-overlay-content';
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'close-btn';
+                closeBtn.textContent = '✕';
+                closeBtn.addEventListener('click', function() {
+                    overlay.classList.remove('active');
+                });
+                overlayContent.appendChild(closeBtn);
+                const textContainer = document.createElement('div');
+                textContainer.id = 'overlayTextContainer';
+                overlayContent.appendChild(textContainer);
+                overlay.appendChild(overlayContent);
+                questionDiv.appendChild(overlay);
+
+                // Сетка миниатюр
+                const miniGrid = document.createElement('div');
+                miniGrid.className = 'slide-mini-grid';
+                const imgElements = [];
+                data.gridImages.forEach((src, i) => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = 'кадр';
+                    img.dataset.index = i;
+                    img.onerror = function() {
+                        this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width%3D"200" height%3D"150" viewBox%3D"0 0 200 150"%3E%3Crect fill%3D"%23f0e8de" width%3D"200" height%3D"150"%2F%3E%3Ctext x%3D"100" y%3D"75" font-family%3D"Arial" font-size%3D"16" fill%3D"%23998877" text-anchor%3D"middle"%3Eнет фото%3C%2Ftext%3E%3C%2Fsvg%3E';
+                    };
+                    // При клике на миниатюру открываем оверлей с выделением нужного предложения
+                    img.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const idx = parseInt(this.dataset.index);
+                        openTextOverlayWithHighlight(overlay, textContainer, idx);
+                    });
+                    miniGrid.appendChild(img);
+                    imgElements.push(img);
+                });
+                questionDiv.appendChild(miniGrid);
+
+                // Область вопроса
+                const area = document.createElement('div');
+                area.className = 'question-area';
+
+                const qText = document.createElement('div');
+                qText.className = 'question-text';
+                qText.textContent = data.questionText;
+                area.appendChild(qText);
+
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options';
+                const radioName = 'q' + idx;
+
+                data.options.forEach((opt, i) => {
+                    const label = document.createElement('label');
+                    label.className = 'option-item';
+
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = radioName;
+                    radio.value = i;
+                    label.appendChild(radio);
+
+                    const customRadio = document.createElement('span');
+                    customRadio.className = 'custom-radio';
+                    label.appendChild(customRadio);
+
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'option-text';
+                    textSpan.textContent = opt;
+                    label.appendChild(textSpan);
+
+                    optionsDiv.appendChild(label);
+                });
+                area.appendChild(optionsDiv);
+
+                const resultMsg = document.createElement('div');
+                resultMsg.className = 'result-message';
+                area.appendChild(resultMsg);
+
+                const controls = document.createElement('div');
+                controls.className = 'question-controls';
+
+                const hintBtn = document.createElement('button');
+                hintBtn.className = 'hint-btn';
+                hintBtn.textContent = '💡 Подсказка';
+                controls.appendChild(hintBtn);
+
+                const textBtn = document.createElement('button');
+                textBtn.className = 'text-btn';
+                textBtn.textContent = '📖 Показать текст';
+                controls.appendChild(textBtn);
+
+                area.appendChild(controls);
+                questionDiv.appendChild(area);
+
+                slideDiv.appendChild(questionDiv);
+
+                // ----- Логика работы слайда -----
+                let answeredCorrectly = false;
+
+                function clearOptionStyles() {
+                    const allLabels = optionsDiv.querySelectorAll('.option-item');
+                    allLabels.forEach(label => {
+                        label.classList.remove('correct-answer', 'wrong-answer');
+                    });
+                }
+
+                function disableRadios() {
+                    const allRadios = optionsDiv.querySelectorAll('input[type="radio"]');
+                    allRadios.forEach(radio => radio.disabled = true);
+                }
+
+                function checkAnswer(selectedIndex) {
+                    if (answeredCorrectly) return;
+                    clearOptionStyles();
+                    const allLabels = optionsDiv.querySelectorAll('.option-item');
+                    const isCorrect = (selectedIndex === data.correctIndex);
+                    if (isCorrect) {
+                        allLabels.forEach((label, idx) => {
+                            if (idx === data.correctIndex) {
+                                label.classList.add('correct-answer');
+                            }
+                        });
+                        resultMsg.textContent = '✅ Правильно!';
+                        resultMsg.className = 'result-message success';
+                        answeredCorrectly = true;
+                        disableRadios();
+                    } else {
+                        allLabels.forEach((label, idx) => {
+                            if (idx === selectedIndex) {
+                                label.classList.add('wrong-answer');
+                            }
+                        });
+                        resultMsg.textContent = '❌ Попробуй ещё раз';
+                        resultMsg.className = 'result-message error';
+                    }
+                }
+
+                function onRadioChange(e) {
+                    const radio = e.target;
+                    if (radio.checked) {
+                        const selectedIndex = parseInt(radio.value);
+                        checkAnswer(selectedIndex);
+                    }
+                }
+
+                const allRadios = optionsDiv.querySelectorAll('input[type="radio"]');
+                allRadios.forEach(radio => {
+                    radio.addEventListener('change', onRadioChange);
+                });
+
+                hintBtn.addEventListener('click', function() {
+                    if (data.isAuthorQuestion) {
+                        resultMsg.textContent = '💡 Подсказка: автора зовут Александр Сергеевич Пушкин';
+                        resultMsg.className = 'result-message hint-message';
+                        return;
+                    }
+                    if (data.textHint) {
+                        resultMsg.textContent = '💡 ' + data.textHint;
+                        resultMsg.className = 'result-message hint-message';
+                        return;
+                    }
+                    imgElements.forEach(img => img.classList.remove('hint-highlight'));
+                    const hintIdx = data.hintImageIndex;
+                    if (hintIdx !== null && imgElements[hintIdx]) {
+                        imgElements[hintIdx].classList.add('hint-highlight');
+                        // Также можно сразу открыть оверлей с выделением, но по желанию пользователя оставим только подсветку
+                    }
+                });
+
+                textBtn.addEventListener('click', function() {
+                    // Показываем весь текст без выделения (передаём -1)
+                    openTextOverlayWithHighlight(overlay, textContainer, -1);
+                });
+
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        overlay.classList.remove('active');
+                    }
+                });
+
+                // Закрытие по Escape
+                document.addEventListener('keydown', function escHandler(e) {
+                    if (e.key === 'Escape' && overlay.classList.contains('active')) {
+                        overlay.classList.remove('active');
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                });
+            }
+            else if (data.isComparison) {
+                const compDiv = document.createElement('div');
+                compDiv.className = 'slide-comparison';
+
+                const grid = document.createElement('div');
+                grid.className = 'comparison-grid';
+
+                data.comparisonItems.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'comparison-item';
+
+                    const img = document.createElement('img');
+                    img.src = item.img;
+                    img.alt = item.caption;
+                    img.onerror = function() {
+                        this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width%3D"200" height%3D"150" viewBox%3D"0 0 200 150"%3E%3Crect fill%3D"%23f0e8de" width%3D"200" height%3D"150"%2F%3E%3Ctext x%3D"100" y%3D"75" font-family%3D"Arial" font-size%3D"16" fill%3D"%23998877" text-anchor%3D"middle"%3Eнет фото%3C%2Ftext%3E%3C%2Fsvg%3E';
+                    };
+                    itemDiv.appendChild(img);
+
+                    const caption = document.createElement('div');
+                    caption.className = 'caption';
+                    caption.textContent = item.caption;
+                    itemDiv.appendChild(caption);
+
+                    grid.appendChild(itemDiv);
+                });
+
+                compDiv.appendChild(grid);
+                slideDiv.appendChild(compDiv);
+            }
+            else if (data.isHint) {
+                const hintDiv = document.createElement('div');
+                hintDiv.className = 'slide-hint';
+
+                const grid = document.createElement('div');
+                grid.className = 'comparison-grid';
+
+                data.hintItems.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'comparison-item';
+
+                    const img = document.createElement('img');
+                    img.src = item.img;
+                    img.alt = item.hint;
+                    img.onerror = function() {
+                        this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width%3D"200" height%3D"150" viewBox%3D"0 0 200 150"%3E%3Crect fill%3D"%23f0e8de" width%3D"200" height%3D"150"%2F%3E%3Ctext x%3D"100" y%3D"75" font-family%3D"Arial" font-size%3D"16" fill%3D"%23998877" text-anchor%3D"middle"%3Eнет фото%3C%2Ftext%3E%3C%2Fsvg%3E';
+                    };
+                    itemDiv.appendChild(img);
+
+                    const caption = document.createElement('div');
+                    caption.className = 'caption hint-caption';
+                    caption.textContent = item.hint;
+                    itemDiv.appendChild(caption);
+
+                    grid.appendChild(itemDiv);
+                });
+
+                hintDiv.appendChild(grid);
+                slideDiv.appendChild(hintDiv);
+            }
+            else if (data.isGrid) {
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'slide-grid';
+                data.gridImages.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = 'кадр сказки';
+                    img.onerror = function() {
+                        this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width%3D"200" height%3D"150" viewBox%3D"0 0 200 150"%3E%3Crect fill%3D"%23f0e8de" width%3D"200" height%3D"150"%2F%3E%3Ctext x%3D"100" y%3D"75" font-family%3D"Arial" font-size%3D"16" fill%3D"%23998877" text-anchor%3D"middle"%3Eнет фото%3C%2Ftext%3E%3C%2Fsvg%3E';
+                    };
+                    gridDiv.appendChild(img);
+                });
+                slideDiv.appendChild(gridDiv);
+
+                const textDiv = document.createElement('div');
+                textDiv.className = 'slide-text';
+                const innerTextDiv = document.createElement('div');
+                innerTextDiv.textContent = data.text;
+                textDiv.appendChild(innerTextDiv);
+                slideDiv.appendChild(textDiv);
+            }
+            else if (data.isSortable) {
+                const sortableDiv = document.createElement('div');
+                sortableDiv.className = 'slide-sortable';
+
+                const header = document.createElement('div');
+                header.className = 'sortable-header';
+                header.textContent = data.sortableHeader || 'Расставь картинки по порядку';
+                sortableDiv.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'sortable-grid';
+                grid.id = 'sortableGrid';
+
+                const shuffled = shuffleArray(data.sortableImages);
+                const correctOrder = data.sortableImages;
+
+                shuffled.forEach((src) => {
+                    const item = document.createElement('div');
+                    item.className = 'sortable-item';
+                    item.draggable = true;
+                    item.dataset.src = src;
+
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.alt = 'кадр';
+                    img.onerror = function() {
+                        this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width%3D"200" height%3D"150" viewBox%3D"0 0 200 150"%3E%3Crect fill%3D"%23f0e8de" width%3D"200" height%3D"150"%2F%3E%3Ctext x%3D"100" y%3D"75" font-family%3D"Arial" font-size%3D"16" fill%3D"%23998877" text-anchor%3D"middle"%3Eнет фото%3C%2Ftext%3E%3C%2Fsvg%3E';
+                    };
+                    item.appendChild(img);
+                    grid.appendChild(item);
+                });
+
+                sortableDiv.appendChild(grid);
+
+                const controls = document.createElement('div');
+                controls.className = 'sortable-controls';
+
+                const shuffleBtn = document.createElement('button');
+                shuffleBtn.className = 'shuffle-btn';
+                shuffleBtn.textContent = 'Перемешать';
+                controls.appendChild(shuffleBtn);
+
+                const checkBtn = document.createElement('button');
+                checkBtn.className = 'check-btn';
+                checkBtn.textContent = 'Проверить порядок';
+                controls.appendChild(checkBtn);
+
+                const msg = document.createElement('span');
+                msg.className = 'message';
+                controls.appendChild(msg);
+
+                sortableDiv.appendChild(controls);
+                slideDiv.appendChild(sortableDiv);
+
+                let draggedItem = null;
+
+                function handleDragStart(e) {
+                    draggedItem = this;
+                    this.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', this.dataset.src);
+                }
+
+                function handleDragEnd(e) {
+                    this.classList.remove('dragging');
+                    document.querySelectorAll('.sortable-item').forEach(el => {
+                        el.classList.remove('drag-over');
+                    });
+                }
+
+                function handleDragOver(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    this.classList.add('drag-over');
+                }
+
+                function handleDragLeave(e) {
+                    this.classList.remove('drag-over');
+                }
+
+                function handleDrop(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    const target = this;
+                    if (draggedItem && target !== draggedItem) {
+                        const parent = target.parentNode;
+                        const temp = document.createElement('div');
+                        parent.insertBefore(temp, draggedItem);
+                        parent.insertBefore(draggedItem, target);
+                        parent.insertBefore(target, temp);
+                        parent.removeChild(temp);
+                    }
+                    document.querySelectorAll('.sortable-item').forEach(el => {
+                        el.classList.remove('drag-over');
+                    });
+                    draggedItem = null;
+                }
+
+                function attachDragEvents() {
+                    const items = grid.querySelectorAll('.sortable-item');
+                    items.forEach(item => {
+                        item.addEventListener('dragstart', handleDragStart);
+                        item.addEventListener('dragend', handleDragEnd);
+                        item.addEventListener('dragover', handleDragOver);
+                        item.addEventListener('dragleave', handleDragLeave);
+                        item.addEventListener('drop', handleDrop);
+                    });
+                }
+
+                attachDragEvents();
+
+                shuffleBtn.addEventListener('click', function() {
+                    const items = Array.from(grid.querySelectorAll('.sortable-item'));
+                    const shuffledItems = shuffleArray(items);
+                    grid.innerHTML = '';
+                    shuffledItems.forEach(item => {
+                        grid.appendChild(item);
+                    });
+                    attachDragEvents();
+                    msg.textContent = '';
+                    msg.className = 'message';
+                });
+
+                checkBtn.addEventListener('click', function() {
+                    const items = grid.querySelectorAll('.sortable-item');
+                    const currentOrder = Array.from(items).map(item => item.dataset.src);
+                    const correctOrder = data.sortableImages;
+                    let isCorrect = true;
+                    for (let i = 0; i < correctOrder.length; i++) {
+                        if (currentOrder[i] !== correctOrder[i]) {
+                            isCorrect = false;
+                            break;
+                        }
+                    }
+                    if (isCorrect) {
+                        msg.textContent = '✅ Правильно! Теперь перескажи сказку по порядку';
+                        msg.className = 'message success';
+                    } else {
+                        msg.textContent = '❌ Попробуй ещё раз';
+                        msg.className = 'message error';
+                    }
+                });
+            }
+            else {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'slide-image';
+                const img = document.createElement('img');
+                img.src = data.imgSrc;
+                img.alt = data.text.replace(/<[^>]*>/g, '');
+                img.onerror = function() {
+                    this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg" width%3D"800" height%3D"500" viewBox%3D"0 0 800 500"%3E%3Crect fill%3D"%23f0e8de" width%3D"800" height%3D"500"%2F%3E%3Ctext x%3D"400" y%3D"250" font-family%3D"Arial" font-size%3D"36" fill%3D"%23998877" text-anchor%3D"middle"%3EИзображение не найдено%3C%2Ftext%3E%3Ctext x%3D"400" y%3D"300" font-family%3D"Arial" font-size%3D"24" fill%3D"%23998877" text-anchor%3D"middle"%3Eпроверьте папку images%3C%2Ftext%3E%3C%2Fsvg%3E';
+                };
+                imageDiv.appendChild(img);
+                slideDiv.appendChild(imageDiv);
+
+                const textDiv = document.createElement('div');
+                textDiv.className = 'slide-text';
+                const innerTextDiv = document.createElement('div');
+                innerTextDiv.innerHTML = data.text;
+                textDiv.appendChild(innerTextDiv);
+                slideDiv.appendChild(textDiv);
+            }
+
+            wrapper.appendChild(slideDiv);
+        });
+    }
+    buildSlides();
+
+    function updateSlide(index) {
+        const slides = document.querySelectorAll('.slide');
+        slides.forEach((el, i) => {
+            el.classList.toggle('active', i === index);
+        });
+        currentIndex = index;
+    }
+
+    function goToPrev() {
+        if (currentIndex > 0) updateSlide(currentIndex - 1);
+    }
+
+    function goToNext() {
+        if (currentIndex < totalSlides - 1) updateSlide(currentIndex + 1);
+    }
+
+    prevBtn.addEventListener('click', goToPrev);
+    nextBtn.addEventListener('click', goToNext);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            goToPrev();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            goToNext();
+        }
+    });
+
+    updateSlide(0);
+</script>
+
+</body>
+</html>
