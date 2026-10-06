@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Интерактивный тест — Основы АВА</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(160deg, #f4f2ff 0%, #eef6ff 50%, #f2fbf7 100%);
+    color: #23233a;
+    line-height: 1.55;
+    padding: 24px 14px 80px;
+    min-height: 100vh;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* ---------- HEADER ---------- */
+  header.hero {
+    background: linear-gradient(135deg, #6c5ce7 0%, #8e7bff 55%, #4aa3f0 100%);
+    border-radius: 22px;
+    padding: 34px 30px;
+    color: #fff;
+    box-shadow: 0 18px 40px -18px rgba(90, 70, 220, .55);
+    margin-bottom: 26px;
+    position: relative;
+    overflow: hidden;
+  }
+  header.hero::after {
+    content: "";
+    position: absolute;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,.13);
+    border-radius: 50%;
+    top: -90px; right: -60px;
+  }
+  header.hero::before {
+    content: "";
+    position: absolute;
+    width: 130px; height: 130px;
+    background: rgba(255,255,255,.10);
+    border-radius: 50%;
+    bottom: -70px; left: 40px;
+  }
+  header.hero h1 { font-size: 27px; line-height: 1.25; margin-bottom: 10px; position: relative; }
+  header.hero p { font-size: 15px; opacity: .93; max-width: 600px; position: relative; }
+  .hero-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; position: relative; }
+  .hero-tags span {
+    background: rgba(255,255,255,.2);
+    border: 1px solid rgba(255,255,255,.35);
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  /* ---------- START SCREEN ---------- */
+  #startScreen {
+    background: #fff;
+    border-radius: 22px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 14px 40px -22px rgba(60, 50, 130, .5);
+    border: 1.5px solid #ece9fb;
+    margin-bottom: 26px;
+  }
+  #startScreen h2 { font-size: 22px; color: #2c2c44; margin-bottom: 8px; }
+  #startScreen p { font-size: 15px; color: #6f6b8c; margin-bottom: 24px; }
+  .name-input {
+    width: 100%;
+    max-width: 420px;
+    padding: 15px 20px;
+    font-size: 16px;
+    border: 2px solid #d9d3f8;
+    border-radius: 14px;
+    outline: none;
+    font-family: inherit;
+    color: #2c2c44;
+    background: #fbfaff;
+    transition: border-color .18s, background .18s;
+    text-align: center;
+  }
+  .name-input:focus { border-color: #6c5ce7; background: #fff; }
+  .name-input::placeholder { color: #b0abd0; }
+  .start-error {
+    color: #c0392b;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* ---------- PROGRESS ---------- */
+  .progress-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(244, 242, 255, .92);
+    backdrop-filter: blur(8px);
+    padding: 12px 4px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+  }
+  .progress-info {
+    display: flex; justify-content: space-between;
+    font-size: 13px; font-weight: 600; color: #6c5ce7;
+    margin-bottom: 7px;
+  }
+  .progress-bar {
+    height: 9px; background: #e2defa; border-radius: 20px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #6c5ce7, #4aa3f0);
+    border-radius: 20px;
+    transition: width .35s ease;
+  }
+
+  /* ---------- QUESTION CARD ---------- */
+  .question {
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px 22px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 22px -14px rgba(60, 50, 130, .35);
+    border: 1.5px solid #ece9fb;
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .question.answered { border-color: #d9d3f8; }
+  .q-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+  .q-num {
+    flex: 0 0 auto;
+    width: 34px; height: 34px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #6c5ce7, #8e7bff);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+  }
+  .q-title { font-size: 16.5px; font-weight: 650; padding-top: 4px; }
+  .q-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-bottom: 7px;
+  }
+  .badge-theory { background: #eef0ff; color: #5a4bd6; }
+  .badge-practice { background: #e6f8f1; color: #128a63; }
+
+  .options { display: flex; flex-direction: column; gap: 9px; }
+  .option {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 12px 15px;
+    border: 1.5px solid #e7e4f7;
+    border-radius: 13px;
+    cursor: pointer;
+    background: #fbfaff;
+    transition: background .18s, border-color .18s, transform .12s;
+    user-select: none;
+    position: relative;
+  }
+  .option:hover { background: #f3f0ff; border-color: #cdc4f5; }
+  .option:active { transform: scale(.995); }
+  .option input { position: absolute; opacity: 0; pointer-events: none; }
+  .option .mark {
+    flex: 0 0 auto;
+    width: 21px; height: 21px;
+    border-radius: 50%;
+    border: 2px solid #cfc9ef;
+    background: #fff;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .18s;
+  }
+  .option .mark::after {
+    content: "";
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #6c5ce7;
+    transform: scale(0);
+    transition: transform .18s;
+  }
+  .option.selected { background: #f1edff; border-color: #a99cf0; }
+  .option.selected .mark { border-color: #6c5ce7; }
+  .option.selected .mark::after { transform: scale(1); }
+  .option .label { font-size: 15px; color: #2c2c44; }
+  .option .letter {
+    font-weight: 700; color: #8c82c9; margin-right: 3px;
+  }
+
+  /* ---------- SUBMIT ---------- */
+  .submit-area { text-align: center; margin: 30px 0 10px; }
+  button.primary {
+    background: linear-gradient(135deg, #6c5ce7, #4aa3f0);
+    color: #fff;
+    border: none;
+    padding: 16px 44px;
+    font-size: 16.5px;
+    font-weight: 700;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0 14px 30px -14px rgba(90, 70, 220, .75);
+    transition: transform .16s, box-shadow .16s, opacity .2s;
+    font-family: inherit;
+  }
+  button.primary:hover { transform: translateY(-2px); box-shadow: 0 18px 34px -14px rgba(90,70,220,.85); }
+  button.primary:active { transform: translateY(0); }
+  button.primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+  button.ghost {
+    background: #fff;
+    color: #6c5ce7;
+    border: 2px solid #d9d3f8;
+    padding: 13px 32px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 40px;
+    cursor: pointer;
+    margin-top: 14px;
+    font-family: inherit;
+    transition: background .18s, border-color .18s;
+  }
+  button.ghost:hover { background: #f4f1ff; border-color: #b5a9f2; }
+
+  .warning {
+    color: #c0392b;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* ---------- RESULTS ---------- */
+  #quizScreen, #resultScreen { display: none; }
+
+  #resultScreen { margin-top: 10px; }
+
+  .score-card {
+    background: #fff;
+    border-radius: 22px;
+    padding: 34px 26px;
+    text-align: center;
+    box-shadow: 0 14px 40px -22px rgba(60, 50, 130, .5);
+    border: 1.5px solid #ece9fb;
+    margin-bottom: 22px;
+  }
+  .score-hello {
+    font-size: 16px;
+    color: #6f6b8c;
+    margin-bottom: 4px;
+  }
+  .score-name {
+    font-size: 22px;
+    font-weight: 800;
+    color: #4b3fc4;
+    margin-bottom: 6px;
+  }
+  .score-attempt {
+    display: inline-block;
+    background: #f0edff;
+    color: #5a4bd6;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 22px;
+  }
+  .score-ring {
+    width: 150px; height: 150px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .score-ring .inner {
+    width: 122px; height: 122px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .score-percent { font-size: 34px; font-weight: 800; color: #4b3fc4; line-height: 1; }
+  .score-sub { font-size: 12px; color: #8a86a8; margin-top: 4px; font-weight: 600; }
+  .score-card h2 { font-size: 22px; margin-bottom: 8px; color: #2c2c44; }
+  .score-card .fraction { font-size: 15px; color: #6f6b8c; font-weight: 600; }
+  .score-verdict {
+    margin-top: 16px;
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 14.5px;
+  }
+  .v-great { background: #e4f9ef; color: #0f8a5f; }
+  .v-good  { background: #eaf1ff; color: #2c62c9; }
+  .v-mid   { background: #fff5e0; color: #b7791f; }
+  .v-low   { background: #fdeceb; color: #b83b2f; }
+
+  .review-title {
+    font-size: 17px; font-weight: 700; color: #3b3760;
+    margin: 6px 0 14px; padding-left: 4px;
+  }
+
+  .review-item {
+    display: flex; align-items: center; gap: 13px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 9px;
+    border: 1.5px solid #ece9fb;
+    box-shadow: 0 4px 16px -12px rgba(60, 50, 130, .4);
+  }
+  .review-item.wrong   { border-left: 5px solid #ec6a5e; }
+  .review-item.correct { border-left: 5px solid #2ecc8f; }
+  .review-icon {
+    flex: 0 0 auto;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+  }
+  .review-item.wrong .review-icon { background: #ec6a5e; }
+  .review-item.correct .review-icon { background: #2ecc8f; }
+  .review-text { font-size: 14.5px; color: #3b3760; flex: 1; }
+  .review-status {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .4px; flex: 0 0 auto;
+  }
+  .review-item.wrong .review-status { color: #d9534f; }
+  .review-item.correct .review-status { color: #1fa877; }
+
+  .review-group-title {
+    font-size: 13px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; color: #8a86a8;
+    margin: 22px 0 10px; padding-left: 4px;
+  }
+
+  .empty-wrong {
+    background: #e6f8f1;
+    border: 1.5px solid #b8ecd5;
+    border-radius: 14px;
+    padding: 18px 22px;
+    text-align: center;
+    color: #0f8a5f;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  footer.note {
+    text-align: center;
+    font-size: 13px;
+    color: #9a97ac;
+    margin-top: 34px;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 560px) {
+    header.hero { padding: 26px 20px; }
+    header.hero h1 { font-size: 22px; }
+    .question { padding: 18px 16px 14px; }
+    .q-title { font-size: 15.5px; }
+    .option .label { font-size: 14.5px; }
+    .score-ring { width: 130px; height: 130px; }
+    .score-ring .inner { width: 106px; height: 106px; }
+    .score-percent { font-size: 29px; }
+    button.primary { width: 100%; padding: 16px 20px; }
+    #startScreen { padding: 30px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header class="hero">
+    <h1>Тест: Основы прикладного анализа поведения (АВА)</h1>
+    <p>25 вопросов по теории и практическим ситуациям. В конце вы увидите имя, номер попытки, результат и список неверных ответов.</p>
+    <div class="hero-tags">
+      <span>Теория</span>
+      <span>Практика</span>
+      <span>ABC-схема</span>
+      <span>Подкрепление</span>
+      <span>DTT и NET</span>
+    </div>
+  </header>
+
+  <!-- ============ СТАРТОВЫЙ ЭКРАН ============ -->
+  <div id="startScreen">
+    <h2>Перед началом теста</h2>
+    <p>Введите ваше имя — оно будет указано в результатах.</p>
+    <input
+      type="text"
+      id="nameInput"
+      class="name-input"
+      placeholder="Ваше имя"
+      maxlength="40"
+      autocomplete="off"
+    >
+    <div class="start-error" id="startError">Пожалуйста, введите имя, чтобы начать тест.</div>
+    <div style="margin-top: 22px;">
+      <button type="button" class="primary" id="startBtn">Начать тест</button>
+    </div>
+  </div>
+
+  <!-- ============ ЭКРАН ТЕСТА ============ -->
+  <div id="quizScreen">
+
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="progressText">Отвечено: 0 из 25</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <form id="quiz"></form>
+
+    <div class="submit-area">
+      <button type="button" class="primary" id="submitBtn">Проверить результат</button>
+      <div class="warning" id="warning">Вы ответили не на все вопросы. Пожалуйста, заполните все пункты.</div>
+    </div>
+
+  </div>
+
+  <!-- ============ ЭКРАН РЕЗУЛЬТАТА ============ -->
+  <div id="resultScreen"></div>
+
+  <footer class="note">
+    Тест создан на основе презентации «Основы АВА».<br>
+    Правильные ответы не раскрываются — только отметка «верно / неверно».
+  </footer>
+
+</div>
+
+<script>
+/* =========================================================
+   БАНК ВОПРОСОВ
+   ========================================================= */
+const QUESTIONS = [
+  {
+    type: 'theory',
+    title: 'На чём основывается АВА как научный подход?',
+    options: [
+      'На личном опыте родителей и советах знакомых',
+      'На исследованиях, наблюдениях и объективных данных',
+      'На традиционных методиках воспитания',
+      'На интуиции и профессиональном чутье педагога'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Что из перечисленного НЕ является поведением с точки зрения теста «мёртвого человека»?',
+    options: [
+      'Громко петь песню',
+      'Произносить слово «дай»',
+      'Оставаться неподвижным в ответ на просьбу',
+      'Хлопать в ладоши'
+    ],
+    correct: 2
+  },
+  {
+    type: 'theory',
+    title: 'Что такое стимул в АВА?',
+    options: [
+      'Любое последствие, которое идёт после поведения',
+      'Конкретные элементы среды, которые влияют на поведение в данный момент',
+      'Внутреннее желание человека что-то сделать',
+      'Реакция взрослого на поведение ребёнка'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Что в ABC-схеме обозначает буква «А» (Antecedent)?',
+    options: [
+      'Конкретное действие, которое можно измерить',
+      'То, что было до поведения: ситуация, просьба, событие',
+      'Реакцию взрослого после поведения',
+      'Внутреннее состояние ребёнка в момент поведения'
+    ],
+    correct: 1
+  },
+  {
+    type: 'practice',
+    title: 'Папа говорит: «Выключай планшет, пора спать». Ребёнок бросает планшет на пол и начинает плакать. Папа вздыхает и снова включает планшет. Что здесь является «С» (последствием)?',
+    options: [
+      'Просьба папы выключить планшет',
+      'Плач и брошенный на пол планшет',
+      'Папа снова включил планшет',
+      'Позднее время суток'
+    ],
+    correct: 2
+  },
+  {
+    type: 'theory',
+    title: 'Что определяет, повторится ли поведение в будущем?',
+    options: [
+      'То, что происходило до поведения',
+      'То, что происходит сразу после поведения',
+      'Характер и темперамент человека',
+      'Возраст ребёнка и уровень развития'
+    ],
+    correct: 1
+  },
+  {
+    type: 'practice',
+    title: 'Мама говорит: «Иди мой руки перед едой». Ребёнок идёт в ванную. Мама улыбается и говорит: «Какой молодец!». Что вероятнее всего произойдёт с этим поведением в будущем?',
+    options: [
+      'Ребёнок будет идти мыть руки чаще',
+      'Ребёнок будет идти мыть руки реже',
+      'Поведение никак не изменится',
+      'Поведение исчезнет полностью'
+    ],
+    correct: 0
+  },
+  {
+    type: 'theory',
+    title: 'Кто в АВА-команде составляет программу, анализирует данные и обучает команду с родителями?',
+    options: [
+      'Инструктор (тьютор)',
+      'Поведенческий аналитик',
+      'Родители ребёнка',
+      'Воспитатель детского сада'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Кто в АВА-команде считается главным партнёром по переносу навыков в быт?',
+    options: [
+      'Поведенческий аналитик',
+      'Инструктор (тьютор)',
+      'Родители',
+      'Супервизор программы'
+    ],
+    correct: 2
+  },
+  {
+    type: 'practice',
+    title: 'Яркий солнечный свет бьёт ребёнку в глаза. Ребёнок надевает солнечные очки — и свет перестаёт мешать. В следующий раз на улице он надевает очки быстрее. Какой это вид последствия?',
+    options: [
+      'Положительное подкрепление',
+      'Отрицательное подкрепление',
+      'Положительное наказание',
+      'Гашение'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Положительное подкрепление — это когда…',
+    options: [
+      'Мы добавляем в среду то, что нравится ребёнку, после нужного поведения',
+      'Мы убираем что-то неприятное сразу после поведения',
+      'Мы добавляем неприятное последствие после поведения',
+      'Мы перестаём подкреплять поведение, которое раньше подкрепляли'
+    ],
+    correct: 0
+  },
+  {
+    type: 'theory',
+    title: 'В течение какого времени нужно дать подкрепление, чтобы ребёнок связал его со своим действием?',
+    options: [
+      'В течение секунды',
+      'В течение минуты',
+      'В течение пяти минут',
+      'В конце занятия'
+    ],
+    correct: 0
+  },
+  {
+    type: 'practice',
+    title: 'Ребёнок просит конфету. Мама говорит: «Сначала съешь суп». Ребёнок начинает громко кричать и топать ногами. Мама устала и даёт конфету — крик прекращается. Что произошло?',
+    options: [
+      'Мы применили гашение истерики',
+      'Мы наказали ребёнка за крик',
+      'Мы случайно подкрепили истерику',
+      'Мы применили отрицательное наказание'
+    ],
+    correct: 2
+  },
+  {
+    type: 'theory',
+    title: 'Что такое гашение (extinction)?',
+    options: [
+      'Добавление приятного последствия после поведения',
+      'Прекращение подкрепления поведения, которое раньше подкрепляли',
+      'Удаление неприятного стимула после поведения',
+      'Введение наказания за нежелательное поведение'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Какой метод является основным в современной АВА-программе?',
+    options: [
+      'Наказание',
+      'Гашение',
+      'Подкрепление',
+      'Игнорирование'
+    ],
+    correct: 2
+  },
+  {
+    type: 'theory',
+    title: 'Зачем проводится тестирование мотивационных стимулов (preference assessment)?',
+    options: [
+      'Чтобы определить, что именно нравится конкретному ребёнку',
+      'Чтобы выбрать форму наказания за проступки',
+      'Чтобы измерить уровень интеллекта',
+      'Чтобы решить, какой метод обучения использовать'
+    ],
+    correct: 0
+  },
+  {
+    type: 'theory',
+    title: 'Почему важно чередовать подкрепления?',
+    options: [
+      'Чтобы ребёнок не привыкал к похвале',
+      'Потому что один и тот же стимул может надоесть',
+      'Чтобы сэкономить материалы на занятии',
+      'Чтобы ребёнок не расслаблялся'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Лестница подсказок: что идёт следующим шагом после моделирования при уменьшении помощи?',
+    options: [
+      'Физическая помощь',
+      'Указательный жест',
+      'Полная самостоятельность',
+      'Словесная инструкция целиком'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Какое главное правило редукции подсказок?',
+    options: [
+      'Помогать как можно больше, чтобы ребёнок не ошибался',
+      'Не помогай больше, чем нужно прямо сейчас',
+      'Никогда не использовать подсказки',
+      'Всегда начинать с физической помощи'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Что такое DTT?',
+    options: [
+      'Обучение в естественной среде, следуя за интересами ребёнка',
+      'Обучение дискретными пробами в структурированной форме',
+      'Метод постепенного прекращения подкрепления',
+      'Самый сильный вид подсказки'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Сколько проб обычно удаётся провести в DTT за 5–10 минут?',
+    options: [
+      '2–3 пробы',
+      '20–30 проб',
+      '50–60 проб',
+      '5–10 проб'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Что такое NET?',
+    options: [
+      'Обучение в естественной среде, следуя за интересами и мотивацией ребёнка',
+      'Строго структурированные пробы за рабочим столом',
+      'Вид наказания за нежелательное поведение',
+      'Наиболее интенсивная форма подсказки'
+    ],
+    correct: 0
+  },
+  {
+    type: 'practice',
+    title: 'Ребёнок хочет достать печенье с верхней полки, но не дотягивается. Взрослый ждёт, пока ребёнок попросит помощи, и как только тот говорит «помоги» — сразу достаёт печенье. Какой это метод обучения?',
+    options: [
+      'DTT — обучение дискретными пробами',
+      'NET — обучение в естественной среде',
+      'Гашение — мы не подкрепляем поведение',
+      'Наказание — убираем неприятное'
+    ],
+    correct: 1
+  },
+  {
+    type: 'theory',
+    title: 'Что является основной альтернативой наказанию в АВА?',
+    options: [
+      'Полное игнорирование ребёнка',
+      'Проактивные методы: обучение альтернативному поведению',
+      'Повышение голоса и строгие запреты',
+      'Лишение любимых игрушек на весь день'
+    ],
+    correct: 1
+  },
+  {
+    type: 'practice',
+    title: 'Ребёнок отбирает игрушку у сестры, выхватывая её из рук. Какое решение соответствует проактивному подходу в АВА?',
+    options: [
+      'Наказать ребёнка и поставить в угол',
+      'Учить говорить «дай, пожалуйста», и сразу давать игрушку, когда он так говорит',
+      'Не обращать внимания на выхватывание',
+      'Забрать все игрушки на неделю'
+    ],
+    correct: 1
+  },
+  {
+    type: 'practice',
+    title: 'Ребёнок сказал «пить» — мама сразу дала воду. Через день ребёнок снова говорит «пить» в похожей ситуации. Что здесь было подкреплением?',
+    options: [
+      'Само слово «пить»',
+      'Вода, которую мама дала сразу',
+      'Ситуация, в которой ребёнок хотел пить',
+      'Спокойная обстановка на кухне'
+    ],
+    correct: 1
+  },
+  {
+    type: 'practice',
+    title: 'Ребёнок учится чистить зубы. Он уже уверенно берёт щётку и чистит, но часто забывает сплюнуть пасту в раковину. Какую подсказку использовать на этом шаге (минимально необходимую)?',
+    options: [
+      'Физическую помощь — сами чистим зубы ребёнку',
+      'Моделирование — показываем весь процесс заново',
+      'Указательный жест — молча показать на раковину',
+      'Никакой — пусть сам догадается'
+    ],
+    correct: 2
+  },
+  {
+    type: 'practice',
+    title: 'DTT-проба: инструктор даёт инструкцию, ребёнок правильно выполняет. Инструктор молча берёт предмет, отворачивается и записывает результат в бланк, а через 20 секунд говорит: «Молодец!». В чём ошибка?',
+    options: [
+      'Не была дана инструкция',
+      'Подкрепление дано с большой задержкой',
+      'Ребёнок не выполнил задание',
+      'Не была сделана пауза перед инструкцией'
+    ],
+    correct: 1
+  },
+  {
+    type: 'practice',
+    title: 'Ребёнок учит 10 карточек с животными. На занятии он правильно отвечает на 9 вопросов из 10, а одно животное стабильно западает на нескольких занятиях подряд. Что делать дальше?',
+    options: [
+      'Вернуться к сильным подсказкам для всех карточек и начать заново',
+      'Прекратить занятие — пока не справляется на 100%',
+      'Разделить работу: 9 карточек — в генерализацию, проблемную отрабатывать отдельно',
+      'Ввести наказание за каждую ошибку'
+    ],
+    correct: 2
+  },
+  {
+    type: 'practice',
+    title: 'Ребёнок ноет перед сном. Мама устала и читает ещё одну сказку. Нытьё прекращается. Что скорее всего произойдёт с нытьём в следующий раз?',
+    options: [
+      'Станет реже — ребёнок понял, что ныть плохо',
+      'Станет чаще — нытьё сработало',
+      'Ничего не изменится — это был разовый случай',
+      'Станет реже — мама устала и больше не станет читать'
+    ],
+    correct: 1
+  }
+];
+
+/* =========================================================
+   ЭЛЕМЕНТЫ
+   ========================================================= */
+const startScreen   = document.getElementById('startScreen');
+const quizScreen    = document.getElementById('quizScreen');
+const resultScreen  = document.getElementById('resultScreen');
+const nameInput     = document.getElementById('nameInput');
+const startError    = document.getElementById('startError');
+const startBtn      = document.getElementById('startBtn');
+const form          = document.getElementById('quiz');
+
+const LETTERS = ['A', 'B', 'C', 'D', 'E'];
+const answers = new Array(QUESTIONS.length).fill(null);
+
+let userName = '';
+
+/* =========================================================
+   СТАРТ ТЕСТА
+   ========================================================= */
+startBtn.addEventListener('click', startQuiz);
+nameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') startQuiz();
+});
+
+function startQuiz() {
+  const name = nameInput.value.trim();
+  if (!name) {
+    startError.style.display = 'block';
+    nameInput.focus();
+    return;
+  }
+  startError.style.display = 'none';
+  userName = name;
+
+  renderQuestions();
+  startScreen.style.display = 'none';
+  quizScreen.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* =========================================================
+   РЕНДЕР ВОПРОСОВ
+   ========================================================= */
+let rendered = false;
+function renderQuestions() {
+  if (rendered) return;
+  rendered = true;
+
+  QUESTIONS.forEach((q, qi) => {
+    const card = document.createElement('div');
+    card.className = 'question';
+    card.id = 'q' + qi;
+
+    const badgeClass = q.type === 'theory' ? 'badge-theory' : 'badge-practice';
+    const badgeText  = q.type === 'theory' ? 'Теория' : 'Практика';
+
+    let html = `
+      <div class="q-head">
+        <div class="q-num">${qi + 1}</div>
+        <div style="flex:1">
+          <span class="q-badge ${badgeClass}">${badgeText}</span>
+          <div class="q-title">${q.title}</div>
+        </div>
+      </div>
+      <div class="options">
+    `;
+
+    q.options.forEach((opt, oi) => {
+      html += `
+        <label class="option" data-q="${qi}" data-o="${oi}">
+          <input type="radio" name="q${qi}" value="${oi}">
+          <span class="mark"></span>
+          <span class="label"><span class="letter">${LETTERS[oi]}.</span> ${opt}</span>
+        </label>
+      `;
+    });
+
+    html += `</div>`;
+    card.innerHTML = html;
+    form.appendChild(card);
+  });
+
+  form.addEventListener('change', (e) => {
+    if (e.target.type !== 'radio') return;
+    const qi = parseInt(e.target.name.replace('q', ''), 10);
+    const oi = parseInt(e.target.value, 10);
+    answers[qi] = oi;
+
+    const card = document.getElementById('q' + qi);
+    card.classList.add('answered');
+    card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    e.target.closest('.option').classList.add('selected');
+
+    updateProgress();
+  });
+
+  updateProgress();
+}
+
+/* =========================================================
+   ПРОГРЕСС
+   ========================================================= */
+function updateProgress() {
+  const done = answers.filter(a => a !== null).length;
+  const total = QUESTIONS.length;
+  const pct = Math.round((done / total) * 100);
+
+  const pt = document.getElementById('progressText');
+  const pp = document.getElementById('progressPercent');
+  const pf = document.getElementById('progressFill');
+  if (pt) pt.textContent = `Отвечено: ${done} из ${total}`;
+  if (pp) pp.textContent = pct + '%';
+  if (pf) pf.style.width = pct + '%';
+
+  const warning = document.getElementById('warning');
+  if (warning && done === total) warning.style.display = 'none';
+}
+
+/* =========================================================
+   ПОПЫТКИ (localStorage)
+   ========================================================= */
+const ATTEMPT_KEY = 'aba_test_attempts';
+
+function getAttempts() {
+  try {
+    const raw = localStorage.getItem(ATTEMPT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveAttempt(record) {
+  const list = getAttempts();
+  list.push(record);
+  try {
+    localStorage.setItem(ATTEMPT_KEY, JSON.stringify(list));
+  } catch (e) {
+    /* localStorage может быть недоступен — тихо игнорируем */
+  }
+  return list.length;
+}
+
+/* =========================================================
+   ПРОВЕРКА РЕЗУЛЬТАТА
+   ========================================================= */
+document.getElementById('submitBtn').addEventListener('click', () => {
+  const unanswered = answers.filter(a => a === null).length;
+
+  if (unanswered > 0) {
+    const warning = document.getElementById('warning');
+    warning.style.display = 'block';
+    warning.textContent = `Вы ответили не на все вопросы (осталось ${unanswered}). Пожалуйста, заполните все пункты.`;
+    const firstEmpty = answers.findIndex(a => a === null);
+    document.getElementById('q' + firstEmpty).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  document.getElementById('warning').style.display = 'none';
+
+  // Подсчёт
+  let correctCount = 0;
+  const details = QUESTIONS.map((q, i) => {
+    const isCorrect = answers[i] === q.correct;
+    if (isCorrect) correctCount++;
+    return { index: i, isCorrect, title: q.title };
+  });
+
+  const total = QUESTIONS.length;
+  const percent = Math.round((correctCount / total) * 100);
+
+  // Сохраняем попытку
+  const now = new Date();
+  const record = {
+    name: userName,
+    date: now.toISOString(),
+    percent: percent,
+    correct: correctCount,
+    total: total
+  };
+  const attemptNumber = saveAttempt(record);
+
+  // Вердикт
+  let verdictClass, verdictText;
+  if (percent >= 90) {
+    verdictClass = 'v-great';
+    verdictText = 'Отличный результат! Вы уверенно владеете материалом.';
+  } else if (percent >= 70) {
+    verdictClass = 'v-good';
+    verdictText = 'Хороший результат! Есть небольшие пробелы, которые стоит повторить.';
+  } else if (percent >= 50) {
+    verdictClass = 'v-mid';
+    verdictText = 'Средний результат. Рекомендуем перечитать разделы о последствиях и методах обучения.';
+  } else {
+    verdictClass = 'v-low';
+    verdictText = 'Стоит вернуться к презентации и повторить основные понятия.';
+  }
+
+  // Цвет кольца
+  let ringColor;
+  if (percent >= 70) ringColor = 'conic-gradient(#2ecc8f 0% ' + percent + '%, #e8e5f7 ' + percent + '% 100%)';
+  else if (percent >= 50) ringColor = 'conic-gradient(#f0a83c 0% ' + percent + '%, #e8e5f7 ' + percent + '% 100%)';
+  else ringColor = 'conic-gradient(#ec6a5e 0% ' + percent + '%, #e8e5f7 ' + percent + '% 100%)';
+
+  const wrongList = details.filter(d => !d.isCorrect);
+  const correctList = details.filter(d => d.isCorrect);
+
+  let reviewHtml = '';
+
+  if (wrongList.length > 0) {
+    reviewHtml += `<div class="review-group-title">Вопросы с ошибками (${wrongList.length})</div>`;
+    wrongList.forEach(d => {
+      reviewHtml += `
+        <div class="review-item wrong">
+          <div class="review-icon">✕</div>
+          <div class="review-text"><strong>№${d.index + 1}.</strong> ${d.title}</div>
+          <div class="review-status">Неверно</div>
+        </div>`;
+    });
+  } else {
+    reviewHtml += `<div class="empty-wrong">Ошибок нет — все вопросы отвечены верно!</div>`;
+  }
+
+  if (correctList.length > 0) {
+    reviewHtml += `<div class="review-group-title">Верные ответы (${correctList.length})</div>`;
+    correctList.forEach(d => {
+      reviewHtml += `
+        <div class="review-item correct">
+          <div class="review-icon">✓</div>
+          <div class="review-text"><strong>№${d.index + 1}.</strong> ${d.title}</div>
+          <div class="review-status">Верно</div>
+        </div>`;
+    });
+  }
+
+  // Экранируем имя на всякий случай
+  const safeName = escapeHtml(userName);
+
+  resultScreen.innerHTML = `
+    <div class="score-card">
+      <div class="score-hello">Результат теста для</div>
+      <div class="score-name">${safeName}</div>
+      <div class="score-attempt">Попытка № ${attemptNumber}</div>
+
+      <div class="score-ring" style="background:${ringColor}">
+        <div class="inner">
+          <div class="score-percent">${percent}%</div>
+          <div class="score-sub">результат</div>
+        </div>
+      </div>
+      <h2>Тест завершён</h2>
+      <div class="fraction">Правильных ответов: ${correctCount} из ${total}</div>
+      <div class="score-verdict ${verdictClass}">${verdictText}</div>
+      <div>
+        <button type="button" class="ghost" id="restartBtn">Пройти заново</button>
+      </div>
+    </div>
+    <div class="review-title">Разбор ответов</div>
+    ${reviewHtml}
+  `;
+
+  quizScreen.style.display = 'none';
+  resultScreen.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => location.reload(), 300);
+  });
+});
+
+/* =========================================================
+   ВСПОМОГАТЕЛЬНОЕ
+   ========================================================= */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+</script>
+
+</body>
+</html>
