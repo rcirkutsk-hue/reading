@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Трекер поведения</title>
+    
+    <!-- МАНИФЕСТ (Помогает Chrome понять, что это приложение) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Трекер поведения","short_name":"Трекер","start_url":".","display":"standalone","background_color":"#f4f7f6","theme_color":"#3498db","icons":[{"src":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0iIzJlY2M3MSIvPjxwYXRoIGQ9Ik0zMCA1MEw0NSA2NUw3MCAzNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+","sizes":"192x192","type":"image/svg+xml"}]}'>
+    
+    <!-- ИКОНКА (Встроена прямо в код, поэтому всегда будет работать) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0iIzJlY2M3MSIvPjxwYXRoIGQ9Ik0zMCA1MEw0NSA2NUw3MCAzNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NSIgZmlsbD0iIzJlY2M3MSIvPjxwYXRoIGQ9Ik0zMCA1MEw0NSA2NUw3MCAzNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+">
+
+    <style>
+        :root { --primary: #3498db; --bg: #f4f7f6; --text: #2c3e50; --green: #2ecc71; --red: #e74c3c; --grey: #7f8c8d; --orange: #f39c12; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 10px; background-color: var(--bg); color: var(--text); }
+        h2 { text-align: center; margin-bottom: 15px; font-size: 20px; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        .setup-columns { display: flex; gap: 10px; margin-bottom: 15px; }
+        .column { flex: 1; background: white; border-radius: 12px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column;}
+        .col-title { font-size: 14px; font-weight: bold; text-align: center; padding: 8px; border-radius: 8px; margin-bottom: 10px; color: white; }
+        .col-green { background-color: var(--green); }
+        .col-red { background-color: var(--red); }
+        .checkbox-list { flex-grow: 1; overflow-y: auto; max-height: 40vh; margin-bottom: 10px; }
+        .checkbox-item { display: flex; align-items: flex-start; margin-bottom: 8px; font-size: 13px; cursor: pointer; line-height: 1.2; }
+        .checkbox-item input { width: 16px; height: 16px; margin-right: 6px; margin-top: 2px; accent-color: var(--primary); flex-shrink: 0;}
+        
+        .add-form { display: flex; flex-direction: column; gap: 5px; margin-top: auto; border-top: 1px solid #eee; padding-top: 10px; }
+        .add-form input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; width: 100%; box-sizing: border-box; }
+        .btn-add { padding: 8px; font-size: 12px; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; }
+        .btn-add-g { background-color: var(--green); }
+        .btn-add-r { background-color: var(--red); }
+
+        .btn-main { padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        .btn-blue { background-color: var(--primary); }
+        .btn-grey { background-color: var(--grey); }
+        .btn-red { background-color: var(--red); }
+        .btn-orange { background-color: var(--orange); }
+
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .back-btn { background: none; border: none; font-size: 15px; color: var(--primary); cursor: pointer; font-weight: bold; }
+        .section-title { font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 15px 0 8px 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .tracker-row { display: flex; align-items: center; justify-content: space-between; background: white; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .tracker-name { flex: 1; font-size: 15px; font-weight: bold; color: #333; padding-right: 10px; line-height: 1.2; }
+        .btn-small { padding: 10px 14px; border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 15px; cursor: pointer; min-width: 45px; text-align: center; }
+        .btn-c { background-color: var(--green); margin-right: 5px; }
+        .btn-p { background-color: #27ae60; }
+        
+        .btn-tracker-neg { padding: 15px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; color: white; cursor: pointer; width: 100%; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background-color: var(--red); }
+        .counter { background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 10px; font-size: 13px; }
+
+        .table-container { width: 100%; overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 12px; text-align: center; }
+        th, td { border: 1px solid #ddd; padding: 6px 4px; }
+        th { background-color: #f8f9fa; font-weight: bold; }
+        .th-pos { background-color: #e8f8f5; color: #117a65; }
+        .th-neg { background-color: #fdedec; color: #922b21; }
+        .td-date { font-weight: bold; text-align: left; padding-left: 8px; white-space: nowrap; }
+        
+        #toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 100; left: 50%; bottom: 20px; transform: translateX(-50%); font-size: 14px; opacity: 0; transition: opacity 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div id="screen-setup" class="screen active">
+        <h2>Трекер поведения</h2>
+        <div class="setup-columns">
+            <div class="column">
+                <div class="col-title col-green">Желательное</div>
+                <div class="checkbox-list" id="list-positive"></div>
+                <div class="add-form">
+                    <input type="text" id="add-pos-input" placeholder="Новое...">
+                    <button class="btn-add btn-add-g" onclick="addBehavior('positive')">+ Добавить</button>
+                </div>
+            </div>
+            <div class="column">
+                <div class="col-title col-red">Нежелательное</div>
+                <div class="checkbox-list" id="list-negative"></div>
+                <div class="add-form">
+                    <input type="text" id="add-neg-input" placeholder="Новое...">
+                    <button class="btn-add btn-add-r" onclick="addBehavior('negative')">+ Добавить</button>
+                </div>
+            </div>
+        </div>
+        <button class="btn-main btn-blue" onclick="startTracking()">Перейти к сбору данных</button>
+        <button class="btn-main btn-grey" onclick="showSummary()">Посмотреть историю (Таблица)</button>
+    </div>
+
+    <div id="screen-tracker" class="screen">
+        <div class="header-bar">
+            <button class="back-btn" onclick="showScreen('setup')">← Настройки</button>
+            <span style="font-weight: bold;">Режим сбора</span>
+            <div style="width: 80px;"></div>
+        </div>
+        <div id="tracker-list"></div>
+        <button class="btn-main btn-orange" style="margin-top: 20px;" onclick="undoLastAction()">↩ Отменить последнее действие</button>
+        <button class="btn-main btn-grey" onclick="showSummary()">Завершить и посмотреть таблицу</button>
+    </div>
+
+    <div id="screen-summary" class="screen">
+        <div class="header-bar">
+            <button class="back-btn" onclick="showScreen('setup')">← На главную</button>
+            <span style="font-weight: bold;">История данных</span>
+            <div style="width: 80px;"></div>
+        </div>
+        <div class="table-container" id="table-wrapper"></div>
+        <button class="btn-main btn-blue" onclick="exportCSV()">📥 Скачать таблицу (Excel)</button>
+        <button class="btn-main btn-red" onclick="clearAllData()">🗑 Удалить всю историю</button>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        const defaultPos = ["Просьбы", "Просьбы к сверстникам", "Просьбы о помощи", "Спокойный отказ", "Следование расписанию"];
+        const defaultNeg = ["Агрессия", "Стимы", "Вокализации", "Крик"];
+
+        let allBehaviors = JSON.parse(localStorage.getItem('allBehaviors_v2'));
+        if (!allBehaviors) {
+            allBehaviors = [];
+            defaultPos.forEach((name, i) => allBehaviors.push({ id: 'p_' + i, name: name, type: 'positive' }));
+            defaultNeg.forEach((name, i) => allBehaviors.push({ id: 'n_' + i, name: name, type: 'negative' }));
+            saveBehaviors();
+        }
+
+        let activeBehaviors = JSON.parse(localStorage.getItem('activeBehaviors_v2')) || allBehaviors.map(b => b.id);
+        let sessionData = JSON.parse(localStorage.getItem('abaSession_v2')) || [];
+        const INTERVAL_MS = 5 * 60 * 1000; 
+
+        function saveBehaviors() {
+            allBehaviors.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+            localStorage.setItem('allBehaviors_v2', JSON.stringify(allBehaviors));
+        }
+
+        function renderSetup() {
+            const posList = document.getElementById('list-positive');
+            const negList = document.getElementById('list-negative');
+            posList.innerHTML = ''; negList.innerHTML = '';
+
+            allBehaviors.forEach(b => {
+                const isChecked = activeBehaviors.includes(b.id) ? 'checked' : '';
+                const html = `
+                    <label class="checkbox-item">
+                        <input type="checkbox" value="${b.id}" ${isChecked} onchange="toggleBehavior('${b.id}')">
+                        <span>${b.name}</span>
+                    </label>
+                `;
+                if (b.type === 'positive') posList.innerHTML += html;
+                else negList.innerHTML += html;
+            });
+        }
+
+        function toggleBehavior(id) {
+            if (activeBehaviors.includes(id)) activeBehaviors = activeBehaviors.filter(bId => bId !== id);
+            else activeBehaviors.push(id);
+            localStorage.setItem('activeBehaviors_v2', JSON.stringify(activeBehaviors));
+        }
+
+        function addBehavior(type) {
+            const inputId = type === 'positive' ? 'add-pos-input' : 'add-neg-input';
+            const name = document.getElementById(inputId).value.trim();
+
+            if (!name) { showToast("⚠️ Введите название"); return; }
+            if (allBehaviors.some(b => b.name.toLowerCase() === name.toLowerCase())) { showToast("⚠️ Такое уже есть"); return; }
+
+            const newBehavior = { id: type + '_' + Date.now(), name: name, type: type };
+            allBehaviors.push(newBehavior);
+            activeBehaviors.push(newBehavior.id);
+            
+            saveBehaviors();
+            localStorage.setItem('activeBehaviors_v2', JSON.stringify(activeBehaviors));
+            document.getElementById(inputId).value = '';
+            renderSetup();
+            showToast("✅ Добавлено");
+        }
+
+        function startTracking() {
+            if (activeBehaviors.length === 0) { showToast("⚠️ Выберите хотя бы одно"); return; }
+            renderTracker();
+            showScreen('tracker');
+        }
+
+        function renderTracker() {
+            const list = document.getElementById('tracker-list');
+            list.innerHTML = '';
+            const today = new Date().toLocaleDateString('ru-RU');
+            
+            const activeList = allBehaviors.filter(b => activeBehaviors.includes(b.id));
+            const posBehaviors = activeList.filter(b => b.type === 'positive');
+            const negBehaviors = activeList.filter(b => b.type === 'negative');
+
+            if (posBehaviors.length > 0) {
+                list.innerHTML += `<div class="section-title">Желательное поведение</div>`;
+                posBehaviors.forEach(b => {
+                    const countC = sessionData.filter(d => d.dateString === today && d.behaviorId === b.id && d.subType === 'C').length;
+                    const countP = sessionData.filter(d => d.dateString === today && d.behaviorId === b.id && d.subType === 'P').length;
+
+                    list.innerHTML += `
+                        <div class="tracker-row">
+                            <div class="tracker-name">${b.name}</div>
+                            <div style="display:flex;">
+                                <button class="btn-small btn-c" onclick="recordData('${b.id}', 'C')">
+                                    С ${countC > 0 ? `<span class="counter">${countC}</span>` : ''}
+                                </button>
+                                <button class="btn-small btn-p" onclick="recordData('${b.id}', 'P')">
+                                    П ${countP > 0 ? `<span class="counter">${countP}</span>` : ''}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (negBehaviors.length > 0) {
+                list.innerHTML += `<div class="section-title">Нежелательное поведение</div>`;
+                negBehaviors.forEach(b => {
+                    const count = sessionData.filter(d => d.dateString === today && d.behaviorId === b.id).length;
+                    list.innerHTML += `
+                        <button class="btn-tracker-neg" onclick="recordData('${b.id}', 'Interval')">
+                            ${b.name} <span class="counter">${count}</span>
+                        </button>
+                    `;
+                });
+            }
+        }
+
+        function recordData(behaviorId, subType) {
+            const behavior = allBehaviors.find(b => b.id === behaviorId);
+            const now = new Date();
+            const timestamp = now.getTime();
+            const currentIntervalId = Math.floor(timestamp / INTERVAL_MS);
+
+            if (behavior.type === 'negative') {
+                const existsInInterval = sessionData.some(d => 
+                    d.behaviorId === behaviorId && Math.floor(d.timestamp / INTERVAL_MS) === currentIntervalId
+                );
+                if (existsInInterval) { showToast("⏳ Уже отмечено в этом 5-мин. интервале"); return; }
+            }
+
+            sessionData.push({
+                behaviorId: behaviorId,
+                behaviorName: behavior.name,
+                behaviorType: behavior.type,
+                subType: subType,
+                timestamp: timestamp,
+                timeString: now.toLocaleTimeString('ru-RU'),
+                dateString: now.toLocaleDateString('ru-RU')
+            });
+
+            localStorage.setItem('abaSession_v2', JSON.stringify(sessionData));
+            renderTracker(); 
+            showToast(`✅ Записано`);
+        }
+
+        function undoLastAction() {
+            if (sessionData.length === 0) { showToast("Нет данных для отмены"); return; }
+            const removed = sessionData.pop();
+            localStorage.setItem('abaSession_v2', JSON.stringify(sessionData));
+            renderTracker(); 
+            showToast(`↩ Отменено: ${removed.behaviorName}`);
+        }
+
+        function showSummary() {
+            const wrapper = document.getElementById('table-wrapper');
+            
+            if (sessionData.length === 0) {
+                wrapper.innerHTML = '<p style="text-align:center; padding: 20px;">История пуста. Соберите данные.</p>';
+                showScreen('summary');
+                return;
+            }
+
+            const dates = [...new Set(sessionData.map(d => d.dateString))].sort((a, b) => {
+                const [d1, m1] = a.split('.').map(Number);
+                const [d2, m2] = b.split('.').map(Number);
+                return m2 - m1 || d2 - d1;
+            });
+
+            const activeList = allBehaviors.filter(b => activeBehaviors.includes(b.id));
+            const posTracked = activeList.filter(b => b.type === 'positive');
+            const negTracked = activeList.filter(b => b.type === 'negative');
+
+            let html = '<table><thead><tr><th rowspan="2">Дата</th>';
+            
+            posTracked.forEach(b => {
+                html += `<th colspan="2" class="th-pos">${b.name}</th>`;
+            });
+            
+            negTracked.forEach(b => {
+                html += `<th rowspan="2" class="th-neg" style="vertical-align: middle;">${b.name}</th>`;
+            });
+            html += '</tr><tr>';
+
+            posTracked.forEach(b => {
+                html += `<th class="th-pos" style="font-size:11px; padding:4px;">С</th><th class="th-pos" style="font-size:11px; padding:4px;">П</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            dates.forEach(date => {
+                html += `<tr><td class="td-date">${date}</td>`;
+                
+                posTracked.forEach(b => {
+                    const dayData = sessionData.filter(d => d.dateString === date && d.behaviorId === b.id);
+                    const countC = dayData.filter(d => d.subType === 'C').length;
+                    const countP = dayData.filter(d => d.subType === 'P').length;
+                    html += `<td>${countC || '-'}</td><td>${countP || '-'}</td>`;
+                });
+
+                negTracked.forEach(b => {
+                    const count = sessionData.filter(d => d.dateString === date && d.behaviorId === b.id).length;
+                    html += `<td>${count || '-'}</td>`;
+                });
+                
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            wrapper.innerHTML = html;
+            showScreen('summary');
+        }
+
+        function exportCSV() {
+            if (sessionData.length === 0) { alert("Нет данных."); return; }
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+            csvContent += "Дата;Поведение;Тип;Отметка;Время\n";
+            
+            const sortedData = [...sessionData].sort((a, b) => a.timestamp - b.timestamp);
+
+            sortedData.forEach(d => {
+                const typeRu = d.behaviorType === 'positive' ? 'Желательное' : 'Нежелательное';
+                let mark = d.subType;
+                if (mark === 'C') mark = 'Сам';
+                if (mark === 'P') mark = 'С подсказкой';
+                if (mark === 'Interval') mark = 'Интервал';
+                
+                csvContent += `${d.dateString};${d.behaviorName};${typeRu};${mark};${d.timeString}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `ABA_Protocol_${new Date().toLocaleDateString('ru-RU').replace(/\./g, '-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearAllData() {
+            if (confirm("Удалить ВСЮ историю наблюдений? Настройки поведений останутся.")) {
+                sessionData = [];
+                localStorage.removeItem('abaSession_v2');
+                showToast("История очищена");
+                showSummary(); 
+            }
+        }
+
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById(`screen-${screenName}`).classList.add('active');
+            if (screenName === 'setup') renderSetup();
+            if (screenName === 'summary') showSummary();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2000);
+        }
+
+        renderSetup();
+    </script>
+</body>
+</html>
