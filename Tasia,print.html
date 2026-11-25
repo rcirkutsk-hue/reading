@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Напечатай слово (Тася)</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            font-family: Arial, Helvetica, sans-serif;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        #setup-screen {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        h2 { margin-bottom: 20px; font-weight: normal; }
+
+        #select-all-container {
+            text-align: left;
+            max-width: 100%;
+            margin: 0 auto 10px auto;
+            padding-left: 10px;
+            display: none;
+        }
+
+        #checkbox-container {
+            text-align: left;
+            margin: 0 auto 20px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            max-width: 100%;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            text-transform: uppercase;
+            user-select: none;
+        }
+        .checkbox-item:hover { background-color: #f0f0f0; }
+        .checkbox-item input {
+            margin-right: 12px;
+            width: 22px; height: 22px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        #select-all-label {
+            font-weight: bold;
+            font-size: 20px;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        #select-all-label:hover { background-color: #f0f0f0; }
+        #select-all-label input {
+            margin-right: 12px;
+            width: 22px; height: 22px;
+            cursor: pointer;
+        }
+
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: none;
+            transition: background 0.3s;
+        }
+        #startBtn:hover { background-color: #45a049; }
+
+        #game-screen {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 800px;
+            background-color: #ffffff;
+            border: 2px solid #000000;
+        }
+
+        td {
+            border: 2px solid #000000;
+            height: 120px;
+            vertical-align: middle;
+        }
+
+        .img-cell {
+            width: 35%;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 70px;
+        }
+
+        .input-cell { width: 65%; position: relative; }
+
+        .measure-span {
+            position: absolute;
+            visibility: hidden;
+            white-space: pre;
+            font-size: 40px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            top: 0; left: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%; height: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 0 20px;
+            font-size: 40px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #000000;
+            box-sizing: border-box;
+            cursor: default;
+            position: relative;
+            z-index: 2;
+            caret-color: #000;
+        }
+
+        input.success { color: #4CAF50; }
+
+        .error-flash {
+            background-color: #ffebee !important;
+            transition: background-color 0.2s;
+        }
+
+        .hint-bubble {
+            position: absolute;
+            top: 35px;
+            transform: translate(-50%, -100%);
+            background: #ffeb3b;
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 26px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .hint-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0;
+            border-style: solid;
+            border-color: #ffeb3b transparent transparent transparent;
+        }
+        .hint-bubble.show {
+            opacity: 1;
+            transform: translate(-50%, -100%) translateY(-5px);
+        }
+
+        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        #restartBtn {
+            margin-top: 30px;
+            background-color: #fff;
+            color: #333;
+            border: 2px solid #333;
+            padding: 10px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #restartBtn:hover { background-color: #333; color: #fff; }
+
+        #results-screen {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .results-title {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        .result-category {
+            margin-bottom: 25px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .category-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .category-title::before {
+            content: '';
+            display: inline-block;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .cat-independent { color: #2e7d32; }
+        .cat-independent::before { background-color: #4CAF50; }
+        .cat-hint { color: #f57f17; }
+        .cat-hint::before { background-color: #ffeb3b; }
+        .cat-error { color: #c62828; }
+        .cat-error::before { background-color: #f44336; }
+        .word-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .word-tag {
+            background: #f5f5f5;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 20px;
+            text-transform: uppercase;
+            border: 1px solid #eee;
+        }
+        .empty-msg { color: #999; font-style: italic; font-size: 16px; }
+        #finishRestartBtn {
+            display: block;
+            margin: 40px auto 20px auto;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #finishRestartBtn:hover { background-color: #45a049; }
+
+        /* ============ МОБИЛЬНАЯ ВЕРСИЯ ============ */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            #setup-screen { margin-top: 10px; }
+            h2 { font-size: 20px; margin-bottom: 12px; }
+            #checkbox-container {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                padding: 10px;
+                gap: 6px;
+            }
+            .checkbox-item { font-size: 16px; padding: 6px; }
+            .checkbox-item input { width: 18px; height: 18px; margin-right: 8px; }
+            #select-all-label { font-size: 16px; }
+            #select-all-label input { width: 18px; height: 18px; margin-right: 8px; }
+            #startBtn { padding: 12px 30px; font-size: 18px; }
+
+            td { height: 70px; }
+            .img-cell { font-size: 40px; padding: 4px; }
+            input[type="text"] { font-size: 24px; padding: 0 10px; }
+            .measure-span { font-size: 24px; left: 10px; }
+            .hint-bubble {
+                font-size: 18px;
+                padding: 3px 8px;
+                top: 22px;
+            }
+            #restartBtn { font-size: 16px; padding: 8px 20px; margin-top: 20px; }
+
+            .results-title { font-size: 22px; margin-bottom: 20px; }
+            .category-title { font-size: 16px; }
+            .word-tag { font-size: 16px; padding: 4px 10px; }
+            #finishRestartBtn { font-size: 18px; padding: 12px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="setup-screen">
+        <h2>Выберите слова для игры</h2>
+        <div id="select-all-container">
+            <label id="select-all-label">
+                <input type="checkbox" id="selectAllCheckbox" checked> Выбрать все
+            </label>
+        </div>
+        <div id="checkbox-container"></div>
+        <button id="startBtn">Начать игру</button>
+    </div>
+
+    <div id="game-screen">
+        <table id="gameTable"></table>
+        <button id="restartBtn">Выбрать другие слова</button>
+    </div>
+
+    <div id="results-screen">
+        <div class="results-title">Результаты</div>
+        <div class="result-category">
+            <div class="category-title cat-independent">Написано самостоятельно (без ошибок и подсказок)</div>
+            <div id="list-independent" class="word-list"></div>
+        </div>
+        <div class="result-category">
+            <div class="category-title cat-hint">Понадобилась подсказка (ждал 5 сек., но не ошибался)</div>
+            <div id="list-hint" class="word-list"></div>
+        </div>
+        <div class="result-category">
+            <div class="category-title cat-error">Сделаны ошибки при вводе</div>
+            <div id="list-error" class="word-list"></div>
+        </div>
+        <button id="finishRestartBtn">Вернуться к выбору слов</button>
+    </div>
+
+<script>
+    const masterList = [
+        { word: "нож", emoji: "🔪" },
+        { word: "нога", emoji: "🦵" },
+        { word: "рука", emoji: "✋" },
+        { word: "ручка", emoji: "🖊️" },
+        { word: "душ", emoji: "🚿" },
+        { word: "дым", emoji: "💨" },
+        { word: "вода", emoji: "💧" },
+        { word: "юбка", emoji: "👗" },
+        { word: "куртка", emoji: "🧥" },
+        { word: "ухо", emoji: "👂" },
+        { word: "тетрадь", emoji: "📄" },
+        { word: "рыба", emoji: "🐟" },
+        { word: "киви", emoji: "🥝" },
+        { word: "хлеб", emoji: "🍞" },
+        { word: "молоко", emoji: "🥛" },
+        { word: "нос", emoji: "👃" },
+        { word: "рот", emoji: "👄" },
+        { word: "сок", emoji: "🧃" },
+        { word: "лук", emoji: "🧅" },
+        { word: "сыр", emoji: "🧀" },
+        { word: "шар", emoji: "🎈" },
+        { word: "кот", emoji: "🐈" },
+        { word: "дом", emoji: "🏠" },
+        { word: "суп", emoji: "🍲" },
+        { word: "каша", emoji: "🍚" },
+        { word: "лев", emoji: "🦁" },
+        { word: "мяч", emoji: "⚽" }
+    ];
+
+    let allWordsData = [];
+    let completedWordsCount = 0;
+    let totalWordsInGame = 0;
+
+    const checkboxContainer = document.getElementById('checkbox-container');
+    const startBtn = document.getElementById('startBtn');
+    const setupScreen = document.getElementById('setup-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const gameTable = document.getElementById('gameTable');
+    const restartBtn = document.getElementById('restartBtn');
+    const resultsScreen = document.getElementById('results-screen');
+    const finishRestartBtn = document.getElementById('finishRestartBtn');
+    const listIndep = document.getElementById('list-independent');
+    const listHint = document.getElementById('list-hint');
+    const listError = document.getElementById('list-error');
+    const selectAllContainer = document.getElementById('select-all-container');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function initSetup() {
+        allWordsData = [...masterList].sort((a, b) => a.word.localeCompare(b.word, 'ru'));
+        startBtn.style.display = 'inline-block';
+        selectAllContainer.style.display = 'block';
+
+        checkboxContainer.innerHTML = '';
+        allWordsData.forEach((item, index) => {
+            const label = document.createElement('label');
+            label.className = 'checkbox-item';
+            label.innerHTML = `
+                <input type="checkbox" class="word-checkbox" value="${index}" checked>
+                ${item.word}
+            `;
+            checkboxContainer.appendChild(label);
+        });
+
+        selectAllCheckbox.addEventListener('change', function() {
+            const all = checkboxContainer.querySelectorAll('.word-checkbox');
+            all.forEach(cb => cb.checked = this.checked);
+        });
+        checkboxContainer.querySelectorAll('.word-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const all = checkboxContainer.querySelectorAll('.word-checkbox');
+                const checked = checkboxContainer.querySelectorAll('.word-checkbox:checked');
+                selectAllCheckbox.checked = (all.length === checked.length);
+            });
+        });
+    }
+
+    startBtn.addEventListener('click', function() {
+        const checkboxes = checkboxContainer.querySelectorAll('input[type="checkbox"]');
+        const selectedIndices = [];
+        checkboxes.forEach(cb => { if (cb.checked) selectedIndices.push(parseInt(cb.value)); });
+
+        if (selectedIndices.length === 0) {
+            alert('Выберите хотя бы одно слово!');
+            return;
+        }
+
+        let gameItems = selectedIndices.map(index => allWordsData[index]);
+        gameItems = shuffleArray(gameItems);
+
+        setupScreen.style.display = 'none';
+        resultsScreen.style.display = 'none';
+        gameScreen.style.display = 'flex';
+        buildGameTable(gameItems);
+    });
+
+    restartBtn.addEventListener('click', () => {
+        gameScreen.style.display = 'none';
+        setupScreen.style.display = 'block';
+        gameTable.innerHTML = '';
+    });
+    finishRestartBtn.addEventListener('click', () => {
+        resultsScreen.style.display = 'none';
+        setupScreen.style.display = 'block';
+        gameTable.innerHTML = '';
+    });
+
+    function buildGameTable(items) {
+        const allInputs = [];
+        gameTable.innerHTML = '';
+        completedWordsCount = 0;
+        totalWordsInGame = items.length;
+
+        items.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="img-cell">${item.emoji}</td>
+                <td class="input-cell">
+                    <span class="measure-span"></span>
+                    <div class="hint-bubble"></div>
+                    <input type="text"
+                           data-answer="${item.word}"
+                           data-index="0"
+                           data-had-error="false"
+                           data-had-timer-hint="false"
+                           autocomplete="off"
+                           autocorrect="off"
+                           autocapitalize="characters"
+                           spellcheck="false"
+                           inputmode="text"
+                           enterkeyhint="next">
+                </td>
+            `;
+            gameTable.appendChild(tr);
+
+            const input = tr.querySelector('input');
+            const hint = tr.querySelector('.hint-bubble');
+            const measureSpan = tr.querySelector('.measure-span');
+            allInputs.push(input);
+
+            function resetIdleTimer() {
+                clearTimeout(input.idleTimer);
+                const answer = input.dataset.answer.toUpperCase();
+                const currentIndex = parseInt(input.dataset.index);
+                if (currentIndex >= answer.length) return;
+
+                input.idleTimer = setTimeout(() => {
+                    const idx = parseInt(input.dataset.index);
+                    if (idx < answer.length) {
+                        input.dataset.hadTimerHint = "true";
+                        showHint(input, measureSpan, hint, idx, answer[idx]);
+                    }
+                }, 5000);
+            }
+
+            input.addEventListener('focus', resetIdleTimer);
+            input.addEventListener('blur', function() {
+                clearTimeout(this.idleTimer);
+                hint.classList.remove('show');
+            });
+
+            // === ГЛАВНОЕ: обработка ввода через событие input (работает везде) ===
+            input.addEventListener('input', function(e) {
+                if (e.isComposing) return; // игнорируем промежуточный IME-ввод
+
+                const answer = this.dataset.answer.toUpperCase();
+                const typed = this.value.toUpperCase().replace(/Ё/g, 'Е');
+                const answerNorm = answer.replace(/Ё/g, 'Е');
+                const currentIndex = parseInt(this.dataset.index);
+                const expectedPrefix = answerNorm.substring(0, typed.length);
+
+                if (typed === expectedPrefix) {
+                    // Всё, что введено, совпадает с началом правильного ответа
+                    this.value = typed;
+                    this.dataset.index = typed.length;
+                    hint.classList.remove('show');
+
+                    if (typed.length === answer.length) {
+                        // Слово набрано
+                        if (!this.classList.contains('success')) {
+                            this.classList.add('success');
+                            completedWordsCount++;
+                            clearTimeout(this.idleTimer);
+
+                            if (completedWordsCount === totalWordsInGame) {
+                                setTimeout(showResults, 600);
+                            } else {
+                                // Автопереход к следующему полю
+                                setTimeout(() => {
+                                    if (index < allInputs.length - 1) allInputs[index + 1].focus();
+                                }, 400);
+                            }
+                        }
+                    } else {
+                        resetIdleTimer();
+                    }
+                } else {
+                    // Ошибка: откатываем к последней верной букве
+                    this.dataset.hadError = "true";
+                    this.value = answer.substring(0, currentIndex);
+                    this.setSelectionRange(this.value.length, this.value.length);
+
+                    this.classList.add('shake', 'error-flash');
+                    setTimeout(() => this.classList.remove('shake', 'error-flash'), 300);
+
+                    if (currentIndex < answer.length) {
+                        showHint(this, measureSpan, hint, currentIndex, answer[currentIndex]);
+                    }
+                    resetIdleTimer();
+                }
+            });
+
+            // Навигация стрелками (для компьютера)
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (index > 0) allInputs[index - 1].focus();
+                } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                    e.preventDefault();
+                    if (index < allInputs.length - 1) allInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('click', function() {
+                this.setSelectionRange(this.value.length, this.value.length);
+            });
+
+            input.addEventListener('paste', e => e.preventDefault());
+        });
+
+        if (allInputs.length > 0) allInputs[0].focus();
+    }
+
+    function showHint(input, measureSpan, hint, index, letter) {
+        measureSpan.textContent = input.value.substring(0, index) + letter;
+        const fullWidth = measureSpan.offsetWidth;
+        measureSpan.textContent = input.value.substring(0, index);
+        const prevWidth = measureSpan.offsetWidth;
+
+        const letterWidth = fullWidth - prevWidth;
+        // Читаем реальный padding-left поля, чтобы позиция совпадала и на ПК, и на мобильном
+        const padLeft = parseFloat(getComputedStyle(input).paddingLeft) || 0;
+        const leftPos = padLeft + prevWidth + (letterWidth / 2);
+
+        hint.style.left = leftPos + 'px';
+        hint.textContent = letter;
+        hint.classList.add('show');
+
+        clearTimeout(hint.hideTimeout);
+        hint.hideTimeout = setTimeout(() => hint.classList.remove('show'), 1500);
+    }
+
+    function showResults() {
+        gameScreen.style.display = 'none';
+        resultsScreen.style.display = 'block';
+        listIndep.innerHTML = ''; listHint.innerHTML = ''; listError.innerHTML = '';
+        let countIndep = 0, countHint = 0, countError = 0;
+        const allInputs = gameTable.querySelectorAll('input[type="text"]');
+
+        allInputs.forEach(input => {
+            const word = input.dataset.answer;
+            const hadError = input.dataset.hadError === "true";
+            const hadHint = input.dataset.hadTimerHint === "true";
+            const tag = document.createElement('span');
+            tag.className = 'word-tag';
+            tag.textContent = word;
+
+            if (hadError) { listError.appendChild(tag); countError++; }
+            else if (hadHint) { listHint.appendChild(tag); countHint++; }
+            else { listIndep.appendChild(tag); countIndep++; }
+        });
+
+        if (countIndep === 0) listIndep.innerHTML = '<span class="empty-msg">Нет слов в этой категории</span>';
+        if (countHint === 0) listHint.innerHTML = '<span class="empty-msg">Нет слов в этой категории</span>';
+        if (countError === 0) listError.innerHTML = '<span class="empty-msg">Нет слов в этой категории</span>';
+    }
+
+    window.onload = initSetup;
+</script>
+
+</body>
+</html>
